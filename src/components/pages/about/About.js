@@ -64,7 +64,7 @@ function About() {
             <ul>
                 <section id="introduction">
                     <Intro />
-                    <img src="images/Architecture.png" alt="BioMemHub Architecture" className='image'/>
+                    <img src="images/Architecture.png" alt="BioMemHub Architecture" className='scheme-img'/>
                 </section>
                 <section id="team">
                     <h1 className='section-title'>Our Team</h1>

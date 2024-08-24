@@ -11,7 +11,6 @@
     max-width: 1300px;
 
     padding-bottom: 50px;
-    padding-top: 100px;
 }
 
 .section-title {
@@ -21,4 +20,12 @@
 .page-container p {
     font-size: 1.5rem;
     color: #000;
+}
+
+.scheme-img{
+    transform: scale(0.8);
+    max-width: 100%; /* Ensures the image scales down to fit the container */
+    height: auto;    /* Maintains the aspect ratio */
+    display: block;  /* Removes any extra space around the image */
+
 }
