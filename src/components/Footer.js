@@ -2,6 +2,7 @@ import React from 'react';
 import './Footer.css';
 import { Button } from './Button';
 import { Link } from 'react-router-dom';
+import { Links } from './Links';
 
 function Footer() {
   return (
@@ -29,26 +30,25 @@ function Footer() {
         <div className='footer-link-wrapper'>
           <div class='footer-link-items'>
             <h2>Affiliations</h2>
-            <a href='https://www2.lehigh.edu'>Lehigh University</a>
-            <a href=''>Department of Biological Sciences</a>
-            <a href=''>Department of Chemistry</a>
-            <a href=''>Department of Bioengineering</a>
-            <a href=''>Im Lab</a>
+            <a href={Links.Lehigh_University}>Lehigh University</a>
+            <a href={Links.Department_of_Biological_Sciences}>Department of Biological Sciences</a>
+            <a href={Links.Department_of_Chemistry}>Department of Chemistry</a>
+            <a href={Links.Department_of_Bioengineering}>Department of Bioengineering</a>
           </div>
           <div class='footer-link-items'>
             <h2>About Us</h2>
             <Link to='/'>Our Team</Link>
             <Link to='/'>Contact</Link>
+            <a href={Links.Lomize_Group}>Lomize Group</a>
+            <a href={Links.Im_Lab}>Im Lab</a>
             <a href='/'> Funding</a>
           </div>
         </div>
         <div className='footer-link-wrapper'>
           <div class='footer-link-items'>
             <h2>Resources</h2>
-            <Link to='/'>Submit Video</Link>
-            <Link to='/'>Ambassadors</Link>
-            <Link to='/'>Agency</Link>
-            <Link to='/'>Influencer</Link>
+            <Link to={Links.BitBucket}>BitBucket</Link>
+            <Link to='/'></Link>
           </div>
           <div class='footer-link-items'>
             <h2>Help</h2>
@@ -69,15 +69,15 @@ function Footer() {
           <img src='images/Lehigh_University.jpg' alt='Im Lab' className='logo-image'/>
           <small class='website-rights'>Copyright(c) 2024-2026 by the Im Lab</small>
           <div class='social-icons'>
-            <Link
+            {/* <Link
               class='social-icon-link facebook'
               to='/'
               target='_blank'
               aria-label='Facebook'
             >
               <i class='fab fa-facebook-f' />
-            </Link>
-            <Link
+            </Link> */}
+            {/* <Link
               class='social-icon-link instagram'
               to='/'
               target='_blank'
@@ -100,7 +100,7 @@ function Footer() {
               aria-label='Twitter'
             >
               <i class='fab fa-twitter' />
-            </Link>
+            </Link> */}
             <Link
               class='social-icon-link twitter'
               to='/'

@@ -1,0 +1,23 @@
+.page-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 90%;
+    margin: 0 auto;
+    padding: 20px;
+    box-sizing: border-box;
+    background-color: #fff;
+    text-align: left;
+    max-width: 1300px;
+
+    padding-bottom: 50px;
+}
+
+.section-title {
+    text-align: center;
+}
+
+.page-container p {
+    font-size: 1.5rem;
+    color: #000;
+}
