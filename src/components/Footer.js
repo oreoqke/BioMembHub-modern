@@ -37,8 +37,8 @@ function Footer() {
           </div>
           <div class='footer-link-items'>
             <h2>About Us</h2>
-            <Link to='/'>Our Team</Link>
-            <Link to='/'>Contact</Link>
+            <Link to='/about#team'>Our Team</Link>
+            <Link to='/about#contact'>Contact</Link>
             <a href={Links.Lomize_Group}>Lomize Group</a>
             <a href={Links.Im_Lab}>Im Lab</a>
             <a href='/'> Funding</a>
