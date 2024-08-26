@@ -11,19 +11,19 @@ function Cards() {
         <div className='cards__wrapper'>
           <ul className='cards__items'>
             <CardItem
-              src='images/Logo_OPRLM_DB1.jpg'
+              src='images/Logo_OPRLM_DB2.jpg'
               text='OPRLM (Orientations of Proteins in Realistic Lipid Membranes) Database'
               label='Database'
               path={Databases.OPRLM}
             />
             <CardItem
-              src='images/Logo_MembranomeX.jpg'
+              src='images/Logo_MembranomeX_DB2.jpg'
               text='Membranome Database'
               label='Database'
               path={Databases.MEMBRANOME}
             />
             <CardItem
-              src='images/Logo_PerMM_DB.jpg'
+              src='images/Logo_PerMM_DB2.jpg'
               text='PerMM (Permeability of Molecules across Membranes) Database'
               label='Database'
               path={Databases.PERMM}
