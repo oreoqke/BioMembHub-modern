@@ -3,17 +3,17 @@
   "name": "Create React App Sample",
   "icons": [
     {
-      "src": "images/Logo_BMH_color2.jpg",
+      "src": "images/Logo_BMH.png",
       "sizes": "64x64 32x32 24x24 16x16",
       "type": "image/x-icon"
     },
     {
-      "src": "images/Logo_BMH_color2.jpg",
+      "src": "images/Logo_BMH.png",
       "type": "image/jpg",
       "sizes": "192x192"
     },
     {
-      "src": "images/Logo_BMH_color2.jpg",
+      "src": "images/Logo_BMH.png",
       "type": "image/jpg",
       "sizes": "512x512"
     }
