@@ -11,19 +11,19 @@ function Cards() {
         <div className='cards__wrapper'>
           <ul className='cards__items'>
             <CardItem
-              src='images/OPRLM-logo.png'
+              src='images/Logo_OPRLM_DB1.jpg'
               text='OPRLM (Orientations of Proteins in Realistic Lipid Membranes) Database'
               label='Database'
               path={Databases.OPRLM}
             />
             <CardItem
-              src='images/Default.png'
+              src='images/Logo_MembranomeX.jpg'
               text='Membranome Database'
               label='Database'
               path={Databases.MEMBRANOME}
             />
             <CardItem
-              src='images/PerMM3-logo.png'
+              src='images/Logo_PerMM_DB.jpg'
               text='PerMM (Permeability of Molecules across Membranes) Database'
               label='Database'
               path={Databases.PERMM}
@@ -31,25 +31,25 @@ function Cards() {
           </ul>
           <ul className='cards__items'>
             <CardItem
-              src='images/PPM-logo.jpg'
+              src='images/Logo_PPM_server.jpg'
               text='PPM (Positioning of Proteins in Membranes) Webserver'
               label='Webserver'
               path={Webservers.PPM}
             />
             <CardItem
-              src='images/OPRLM-logo.png'
+              src='images/Logo_OPRLM_server.jpg'
               text='OPRLM (Orientations of Proteins in Realistic Lipid Membranes) Webserver'
               label='Webserver'
               path={Webservers.OPRLM}
             />
             <CardItem
-              src='images/FMAP-logo.jpg'
+              src='images/Logo_FMAP_server.jpg'
               text='FMAP (Folding of Membrane-Associated Peptides) Webserver'
               label='Webserver'
               path={Webservers.FMAP}
             />
             <CardItem
-              src='images/TMDOCK-logo.jpg'
+              src='images/Logo_TMDOCK_server.jpg'
               text='TMDOCK (TM helix Docking) Webserver'
               label='Webserver'
               path={Webservers.TMDOCK}
@@ -57,13 +57,13 @@ function Cards() {
           </ul>
           <ul className='cards__items'>
           <CardItem
-              src='images/TMPfold-logo.jpg'
+              src='images/Logo_TMPfold_server2.jpg'
               text='TMPfold (TM Protein Folding) Webserver'
               label='Webserver'
               path={Webservers.TMPfold}
             />
             <CardItem
-              src='images/PerMM3-logo.png'
+              src='images/Logo_PERMM_server1.jpg'
               text='PerMM (Permeability of Molecules across Membranes) Webserver'
               label='Webserver'
               path={Webservers.PERMM}
@@ -75,7 +75,7 @@ function Cards() {
               path={Webservers.TMnet}
             />
             <CardItem
-              src='images/CELLPM-logo.png'
+              src='images/CELLPM-logo.jpg'
               text='CellPM (Cell-Penetrating Peptides) Webserver'
               label='Webserver'
               path={Webservers.CELLPM}

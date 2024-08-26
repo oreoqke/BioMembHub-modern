@@ -8,9 +8,9 @@ function Footer() {
   return (
     <div className='footer-container'>
       <section className='footer-subscription'>
-        <p className='footer-subscription-heading'>
+        {/* <p className='footer-subscription-heading'>
           Please feel free to contact us with any questions or concerns.
-        </p>
+        </p> */}
         {/* <p className='footer-subscription-text'>
           You can unsubscribe at any time.
         </p> */}

@@ -30,7 +30,8 @@ function Navbar() {
         <div className='navbar-container'>
           <Link to='/' className='navbar-logo' onClick={closeMobileMenu}>
             BioMembHub
-            <i class='fab fa-typo3' />
+            {/* <i class='fab fa-typo3' /> */}
+            <img src="/images/Logo_BMH_color2.jpg" alt="Logo" width="50" height="50"/>
           </Link>
           <div className='menu-icon' onClick={handleClick}>
             <i className={click ? 'fas fa-times' : 'fas fa-bars'} />
