@@ -57,7 +57,7 @@ function Cards() {
           </ul>
           <ul className='cards__items'>
           <CardItem
-              src='images/Logo_TMPfold_server2.jpg'
+              src='images/Logo_TMPFOLD_server2.jpg'
               text='TMPfold (TM Protein Folding) Webserver'
               label='Webserver'
               path={Webservers.TMPfold}
