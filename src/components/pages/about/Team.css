@@ -7,12 +7,20 @@
     margin-bottom: 0px;
 }
 
-/* Three columns side by side */
+/* Three columns side by side for large screens */
 .column {
     flex: 1 1 30%; /* Flex-grow, flex-shrink, and flex-basis: 30% ensures 3 per row */
     margin-bottom: 16px;
     padding: 0 8px;
     box-sizing: border-box; /* Ensure padding and border are included in width/height */
+}
+
+/* Two columns side by side for medium screens */
+@media screen and (max-width: 900px) {
+    .column {
+        flex: 1 1 45%; /* Adjust the flex-basis to 45% for two columns */
+        max-width: 45%; /* Ensure the column spans 45% of the row */
+    }
 }
 
 /* Display in one column on small screens */
@@ -30,8 +38,7 @@
     display: block;
     margin-left: auto;
     margin-right: auto;
-    width: 100%;
-    max-width: 250px;
+    width: 250px;
     height: 250px;  /* Ensure the image has a fixed height */
     object-fit: cover; /* Crop the image to fit the dimensions */
 }
@@ -45,6 +52,7 @@
     font-style: italic;
     font-size: 14px; /* Adjust the font size as needed */
     color: #000000; /* Adjust the color as needed */
-    text-align: left;
-    margin-left: auto;
+    text-align: center;
+    margin: 0 auto;
+    max-width: 250px;
 }
