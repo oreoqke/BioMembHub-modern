@@ -3,6 +3,7 @@ import './About.css';
 import { Databases, Webservers } from '../../Links';
 import Footer from '../../Footer';
 import { useLocation} from 'react-router-dom';
+import { Team } from './Team.js';
 
 function Intro() {
     return (
@@ -68,6 +69,7 @@ function About() {
                 </section>
                 <section id="team">
                     <h1 className='section-title'>Our Team</h1>
+                    <Team />
                 </section>
                 <section id="acknowledgements">
                     <h1 className='section-title'>Acknowledgements</h1>

@@ -1,0 +1,50 @@
+/* Container for the columns */
+.row {
+    display: flex;
+    flex-wrap: wrap; /* Allows wrapping of columns if needed */
+    justify-content: space-between; /* Ensures even spacing between columns */
+    padding: 0px;
+    margin-bottom: 0px;
+}
+
+/* Three columns side by side */
+.column {
+    flex: 1 1 30%; /* Flex-grow, flex-shrink, and flex-basis: 30% ensures 3 per row */
+    margin-bottom: 16px;
+    padding: 0 8px;
+    box-sizing: border-box; /* Ensure padding and border are included in width/height */
+}
+
+/* Display in one column on small screens */
+@media screen and (max-width: 600px) {
+    .column {
+        flex: 1 1 100%; /* Make each column take full width on small screens */
+        max-width: 100%; /* Ensure the column spans the full width */
+        display: block;
+        margin-left: 20px;
+        margin-right: 20px;
+    }
+}
+
+.container-image {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+    max-width: 250px;
+    height: 250px;  /* Ensure the image has a fixed height */
+    object-fit: cover; /* Crop the image to fit the dimensions */
+}
+
+.container h3 {
+    text-align: center;
+}
+
+.italic-text {
+    font-family: Verdana;
+    font-style: italic;
+    font-size: 14px; /* Adjust the font size as needed */
+    color: #000000; /* Adjust the color as needed */
+    text-align: left;
+    margin-left: auto;
+}
