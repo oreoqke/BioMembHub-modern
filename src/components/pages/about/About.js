@@ -44,6 +44,13 @@ function Intro() {
     );
 }
 
+function Contact() {
+    return (
+        <>
+        <p>here</p>
+        </>
+    );
+}
 
 function About() {
     const location = useLocation();
@@ -73,10 +80,11 @@ function About() {
                 </section>
                 <section id="acknowledgements">
                     <h1 className='section-title'>Acknowledgements</h1>
-                    <p>Thank you to Alexey Kovalenko and Stanyslav Cherepanov for the help in creating BioMembHub.</p>
+                    <p>Thank you to Alexey Kovalenko and Stanislav Cherepanov for the help in creating BioMembHub.</p>
                 </section>
                 <section id="contact">
                     <h1 className='section-title'>Contact Us</h1>
+                    <Contact />
                 </section>
             </ul>
         </div>
