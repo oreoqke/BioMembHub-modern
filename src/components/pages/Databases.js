@@ -10,7 +10,7 @@ function DatabasesPage() {
                 <h1 class="section-title">Databases</h1>
 
                 <div class="database-item">
-                    <img src="/images/Logo_OPRLM_DB1.jpg" alt="Database Image" class="database-img"/>
+                    <img src="/images/Logo_OPRLM_DB2.jpg" alt="Database Image" class="database-img"/>
                     <div>
                         <a href={Databases.OPRLM}><h3>OPRLM (Orientations of Proteins in Realistic Lipid Membranes) </h3> </a>
                         <p class="database-text" style={{fontSize: "15px"}}>
@@ -26,7 +26,7 @@ function DatabasesPage() {
                     </div>
                 </div>
                 <div class="database-item">
-                    <img src="/images/Logo_MembranomeX.jpg" alt="Database Image" class="database-img"/>
+                    <img src="/images/Logo_MembranomeX_DB2.jpg" alt="Database Image" class="database-img"/>
                     <div>
                         <a href={Databases.MEMBRANOME}><h3>MembranomeX</h3></a>
                         <p className="database-text" style={{fontSize: "15px"}}>
@@ -47,7 +47,7 @@ function DatabasesPage() {
                     </div>
                 </div>
                 <div class="database-item">
-                    <img src="/images/Logo_PerMM_DB.jpg" alt="Database Image" class="database-img"/>
+                    <img src="/images/Logo_PerMM_DB2.jpg" alt="Database Image" class="database-img"/>
                     <div>
                         <a href={Databases.PERMM}><h3>PerMM (Permeabiity of Molecules across Membranes)</h3></a>
                         <p className="database-text" style={{fontSize: "15px"}} >

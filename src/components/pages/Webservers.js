@@ -114,7 +114,7 @@ function WebserversPage() {
                 <div class="database-item">
                     <img src="/images/Logo_PERMM_server1.jpg" alt="Webserver Image" class="database-img"/>
                     <div>
-                        <a href={Webservers.PERMM}><h3> PerMM </h3></a>
+                        <a href={Webservers.PERMM}><h3> PerMM (Permeability of Molecules across Membranes) </h3></a>
                         <p className="database-text" style={{ fontSize: "15px" }}>
                         The PerMM web tool allows assessment of passive permeability 
                         of small organic molecules across the lipid bilayer. The 
@@ -128,6 +128,27 @@ function WebserversPage() {
                         membrane types. The server can assist investigators at early 
                         stages of drug discovery to optimize cell permeability of new 
                         therapeutics derived from natural products or synthetic molecules.
+                        </p>
+                    </div>
+                </div>
+                <div class="database-item">
+                    <img src="/images/CELLPM-logo.jpg" alt="Webserver Image" class="database-img"/>
+                    <div>
+                        <a href={Webservers.CELLPM}><h3> CellPM </h3></a>
+                        <p className="database-text" style={{ fontSize: "15px" }}>
+                        The CellPM web server is a physics-based computational 
+                        tool for analysis of peptide-membrane interactions and 
+                        prediction of peptide’s ability to cross the lipid bilayer 
+                        via an energy-independent pathway. One can use an amino 
+                        acid sequence or a predefined 3D structure of a specified 
+                        peptide to calculate its optimal spatial position in 
+                        membrane, the energy of membrane binding, the lowest 
+                        energy translocation pathway across the lipid bilayer, 
+                        and the permeability coefficient. This tool produces 
+                        a physically realistic description of membrane-peptide 
+                        interactions, including peptide insertion into membrane, 
+                        formations of α-helices, and the changes in peptide 
+                        orientation during the passive translocation through membrane.  
                         </p>
                     </div>
                 </div>
