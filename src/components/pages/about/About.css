@@ -37,8 +37,13 @@
     max-width: 100%; /* Ensures the image scales down to fit the container */
     height: auto;    /* Maintains the aspect ratio */
     display: block;  /* Removes any extra space around the image */
-
+    transition: transform 0.3s ease-in-out;
 }
+
+.scheme-img.scaled {
+    transform: scale(1.2);
+}
+
 
 @media screen and (max-width: 600px) {
     .about {
@@ -55,3 +60,4 @@
     }
     
 }
+

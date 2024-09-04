@@ -46,6 +46,10 @@ function Intro() {
     );
 }
 
+function ToggleSize() {
+    var img = document.getElementById('scalable-image');
+    img.classList.toggle("scaled");
+}
 
 function About() {
     const location = useLocation();
@@ -67,7 +71,11 @@ function About() {
             <ul>
                 <section id="introduction">
                     <Intro />
-                    <img src="images/Architecture.png" alt="BioMemHub Architecture" className='scheme-img'/>
+                    <img id="scalable-image"
+                         src="images/Architecture.png" 
+                         alt="BioMemHub Architecture" 
+                         class='scheme-img'
+                         onClick={ToggleSize}/>
                 </section>
                 <section id="team">
                     <h1 className='section-title'>Our Team</h1>
