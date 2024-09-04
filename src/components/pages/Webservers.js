@@ -7,7 +7,7 @@ function WebserversPage() {
     return (
         <>
             <div class="page-container">
-                <h1 class="section-title">Databases</h1>
+                <h1 class="section-title">Webservers</h1>
 
                 {/* PPM */}
                 <div class="database-item">
