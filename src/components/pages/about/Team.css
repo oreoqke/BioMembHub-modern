@@ -3,7 +3,8 @@
     display: flex;
     flex-wrap: wrap; /* Allows wrapping of columns if needed */
     justify-content: space-between; /* Ensures even spacing between columns */
-    padding: 0px;
+    padding-top: 15px;
+
     margin-bottom: 0px;
 }
 

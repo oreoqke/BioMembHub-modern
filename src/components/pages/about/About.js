@@ -4,12 +4,13 @@ import { Databases, Webservers } from '../../Links';
 import Footer from '../../Footer';
 import { useLocation} from 'react-router-dom';
 import { Team } from './Team.js';
+import { Contacts } from './Contacts.js';
 
 function Intro() {
     return (
         <div>
             <h1 className='section-title'>
-                INTRODUCTION
+                About Us
             </h1>
             <div>
                 <p> The BioMemHub infrastructure is composed of three parts. 
@@ -44,13 +45,6 @@ function Intro() {
     );
 }
 
-function Contact() {
-    return (
-        <>
-        <p>here</p>
-        </>
-    );
-}
 
 function About() {
     const location = useLocation();
@@ -80,11 +74,10 @@ function About() {
                 </section>
                 <section id="acknowledgements">
                     <h1 className='section-title'>Acknowledgements</h1>
-                    <p>Thank you to Alexey Kovalenko and Stanislav Cherepanov for the help in creating BioMembHub.</p>
-                </section>
+                    <p style={{ textAlign: 'center' }}> Thank you to Alexey Kovalenko and Stanislav Cherepanov for the help in creating BioMembHub.</p>               </section>
                 <section id="contact">
                     <h1 className='section-title'>Contact Us</h1>
-                    <Contact />
+                    <Contacts />
                 </section>
             </ul>
         </div>

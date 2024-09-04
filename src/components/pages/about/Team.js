@@ -53,8 +53,8 @@ export function Team() {
             university: "University of Michigan"
         },
         {
-            name: "Yongsu Back",
-            image: "images/team/Yongsu_Back.jpg",
+            name: "Yongsu Baek",
+            image: "images/team/Yongsu_Baek.jpg",
             role: "Scientist",
             company: "MolCube Inc."
         },

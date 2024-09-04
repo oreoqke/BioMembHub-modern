@@ -1,3 +1,27 @@
 .contacts {
-    display: inline-block;
+    display: flex;
+    text-align: center;
+    margin: 10px 10px 0 10px;
+    justify-content: space-evenly;
+
+}
+
+.contact-item {
+    margin-bottom: 15px;
+}
+
+.contact-name {
+    font-weight: bold;
+    margin: 0;
+    font-size: 18px;
+}
+
+.contact-email {
+    color: #007BFF;
+    text-decoration: none;
+    font-style: italic;
+}
+
+.contact-email:hover {
+    text-decoration: underline;
 }
