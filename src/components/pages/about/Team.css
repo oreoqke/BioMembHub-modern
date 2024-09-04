@@ -10,9 +10,9 @@
 
 /* Three columns side by side for large screens */
 .column {
-    flex: 1 1 30%; /* Flex-grow, flex-shrink, and flex-basis: 30% ensures 3 per row */
+    flex: 1 1 33%; /* Flex-grow, flex-shrink, and flex-basis: 30% ensures 3 per row */
     margin-bottom: 16px;
-    padding: 0 8px;
+    padding: 0px;
     box-sizing: border-box; /* Ensure padding and border are included in width/height */
 }
 

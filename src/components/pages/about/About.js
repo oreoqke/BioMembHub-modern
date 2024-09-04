@@ -12,7 +12,8 @@ function Intro() {
             <h1 className='section-title'>
                 About Us
             </h1>
-            <div>
+            <div class="about">
+                <img src="images/Logo_BMH.png" alt="BioMemHub Logo"/>
                 <p> The BioMemHub infrastructure is composed of three parts. 
                     The first part includes the {' '}
                     <a href={Databases.OPRLM}>OPRLM</a>{' '}

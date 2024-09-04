@@ -43,73 +43,34 @@ function Footer() {
             <a href={Links.Im_Lab}>Im Lab</a>
             <a href='/'> Funding</a>
           </div>
-        </div>
-        <div className='footer-link-wrapper'>
           <div class='footer-link-items'>
             <h2>Resources</h2>
             <Link to={Links.BitBucket}>BitBucket</Link>
-            <Link to='/'></Link>
+            <Link to='/'>Databases</Link>
+            <Link to='/'>Webservers</Link>
+            <Link to='/'>Help</Link>
           </div>
           <div class='footer-link-items'>
-            <h2>Help</h2>
-            <Link to='/'>Containers</Link>
-            <Link to='/'>Instruction</Link>
-            <Link to='/'>Download</Link>
+            <h2>Contact Info</h2>
+            <p class="contact-email" style={{color: "#fff"}}> almz@umich.edu</p>
+            <p class="contact-email" style={{color: "#fff"}}> wonpil@lehigh.edu</p>
+            <p class="contact-address">(610) 758-4524</p>
+            <p class="contact-address"> Iacocca Hall, 111 Research Drive<br/>
+             Bethlehem, PA 18015</p>
           </div>
         </div>
+
       </div>
       <section class='social-media'>
         <div class='social-media-wrap'>
-          <div className='footer-logo'>
-            {/* <Link to='/' className='social-logo'>
-              Im Lab
-              <i class='fab fa-typo3' />
-            </Link> */}
+          {/* <div className='footer-logo'>
+          </div> */}
+          <div class='footer-logo'>
+            <img src='images/Lehigh_University.jpg' alt='Im Lab' className='logo-image'/>
+            <small class='website-rights'>Copyright(c) 2024-2026 by the Im Lab</small>
           </div>
-          <img src='images/Lehigh_University.jpg' alt='Im Lab' className='logo-image'/>
-          <small class='website-rights'>Copyright(c) 2024-2026 by the Im Lab</small>
-          <div class='social-icons'>
-            {/* <Link
-              class='social-icon-link facebook'
-              to='/'
-              target='_blank'
-              aria-label='Facebook'
-            >
-              <i class='fab fa-facebook-f' />
-            </Link> */}
-            {/* <Link
-              class='social-icon-link instagram'
-              to='/'
-              target='_blank'
-              aria-label='Instagram'
-            >
-              <i class='fab fa-instagram' />
-            </Link>
-            <Link
-              class='social-icon-link youtube'
-              to='/'
-              target='_blank'
-              aria-label='Youtube'
-            >
-              <i class='fab fa-youtube' />
-            </Link>
-            <Link
-              class='social-icon-link twitter'
-              to='/'
-              target='_blank'
-              aria-label='Twitter'
-            >
-              <i class='fab fa-twitter' />
-            </Link> */}
-            {/* <Link
-              class='social-icon-link twitter'
-              to='/'
-              target='_blank'
-              aria-label='LinkedIn'
-            >
-              <i class='fab fa-linkedin' />
-            </Link> */}
-          </div>
+          {/* <div class='social-icons'>
+          </div> */}
         </div>
       </section>
     </div>

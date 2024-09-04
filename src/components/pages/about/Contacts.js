@@ -6,10 +6,8 @@ export function Contacts() {
         <div class='contacts'>
             <div class="contact-item">
                 <p class="contact-name">Wonpil Im</p>
-                <p class="contact-email"> wonpil@lehigh.edu</p>
+                <p class="contact-email"> wonpil@lehigh.edu </p>
                 <p> 610-758-4524 (office) </p>
-                {/* <p> 610-758-4705 (lab) </p>
-                <p> 610-758-4004 </p> */}
                 <p> Iacocca Hall, 111 Research Drive<br/> 
                     Bethlehem, PA 18015
                 </p>
