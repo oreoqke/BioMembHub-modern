@@ -1,19 +1,39 @@
-.help{
-    margin: 0;
+.help {
     padding: 50px;
     text-align: center;
 }
 
-.rotating-image{
-    padding-top: 200px;
-    width: 200px;
-    height: auto;
-    transition: transform 0.1s linear;
-    transform-style: preserve-3d;
-    margin-bottom: 20px;
+/* Arbitrary positioned background image */
+.background-image {
+    position: absolute;
+    background-size: contain;
+    background-repeat: no-repeat;
+    width: 150px;
+    height: 150px;
+    z-index: -1; /* Behind other content */
+    transition: transform 0.1s linear; /* Smooth transition for scrolling rotation */
 }
 
-.long-content{
+/* Position specific images */
+.top-left {
+    top: 400px;
+    left: 300px;
+    background-image: url('/public/images/Blue_Chol.png');
+}
+
+.bottom-right {
+    bottom: 300px;
+    right: 300px;
+    background-image: url('/public/images/Blue_Chol.png');
+}
+
+.top-right {
+    top: 200px;
+    right: 300px;
+    background-image: url('/public/images/Blue_Chol.png');
+}
+
+.long-content {
     margin-top: 200px;
-    margin-bottom: 100vh;
+    height: 100vh; /* More content to scroll through */
 }
