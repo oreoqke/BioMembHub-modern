@@ -6,7 +6,7 @@ import { Databases, Webservers } from './Links';
 function Cards() {
   return (
     <div className='cards'>
-      <h1>Here is Our Databases and Webservers!</h1>
+      {/* <h1>Here is Our Databases and Webservers!</h1> */}
       <div className='cards__container'>
         <div className='cards__wrapper'>
           <ul className='cards__items'>

@@ -10,10 +10,10 @@ function Home() {
   return (
     <>
       <HeroSection />
-      <Cards />
       <div className='container-info'>
         <Intro />
       </div>
+      <Cards />
       <Footer />
     </>
   );

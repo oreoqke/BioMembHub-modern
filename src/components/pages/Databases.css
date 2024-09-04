@@ -1,0 +1,56 @@
+.page-container {
+    display: block;
+    width: 90%;
+    /* margin: 0 auto; */
+    /* padding: 20px; */
+    box-sizing: border-box;
+    background-color: #fff;
+
+    max-width: 1000px;
+    padding-bottom: 50px;
+}
+
+.section-title {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.database-item {
+    display: flex; /* Flexbox to align image and header horizontally */
+    align-items: flex-start; /* Align the items at the start (top of the row) */
+    margin-top: 20px;
+    margin-bottom: 50px;
+    justify-content: left;
+    margin-right: auto;
+    margin-left: auto;
+}
+
+.database-img {
+    width: 100px;
+    height: 100px;
+    margin-right: 20px; /* Space between image and description */
+}
+
+.database-text {
+    display: block;
+}
+
+h3 {
+    margin: 0; /* Remove default margin from h3 */
+    padding: 0; /* Remove default padding */
+    text-align: left;
+}
+
+@media screen and (max-width: 600px) {
+    .database-img {
+        width: 50px;
+        height: 50px;
+        float: left; /* Keep the image floating left on mobile */
+        margin-right: 10px; /* Add smaller spacing on mobile */
+        margin-bottom: 10px;
+    }
+
+    .database-text {
+        overflow: hidden; /* Ensure text wraps properly around the image */
+    }
+}
