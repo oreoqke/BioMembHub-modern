@@ -86,8 +86,10 @@ function About() {
                     <div className="funding-section">
                         <img src="images/NSF_logo.jpg" alt="NSF Logo" className="nsf-logo" />
                         <div className="funding-links">
-                            <a href="https://www.nsf.gov/awardsearch/showAward?AWD_ID=2403503" target="_blank" rel="noopener noreferrer">NSF Award #2403503</a>
-                            <a href="https://www.nsf.gov/awardsearch/showAward?AWD_ID=2403502" target="_blank" rel="noopener noreferrer">NSF Award #2403502</a>
+                            <a href="https://www.nsf.gov/awardsearch/showAward?AWD_ID=2403583" target="_blank" rel="noopener noreferrer">NSF Award #2403503</a>
+                            <p>Collaborative Research: BioMembHub Cyberinfrastructure for Modeling and Analysis of Proteins, Peptides, and Small Molecules in Biomembranes</p>
+                            <a href="https://www.nsf.gov/awardsearch/showAward?AWD_ID=2403582" target="_blank" rel="noopener noreferrer">NSF Award #2403502</a>
+                            <p>BioMembHub Cyberinfrastructure for Modeling and Analysis of Proteins, Peptides, and Small Molecules in Biomembranes</p>
                         </div>
                     </div>
                 </section>
