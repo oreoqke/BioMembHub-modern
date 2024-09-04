@@ -61,7 +61,7 @@ function About() {
                 if (element) {
                     element.scrollIntoView({ behavior: 'smooth'});
                 }
-            }, 100);
+            }, 200);
         }
     }, [location])
 
