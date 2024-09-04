@@ -18,12 +18,14 @@
 .top-left {
     top: 400px;
     left: 300px;
+    transform: rotate(45deg);
     background-image: url('/public/images/Blue_Chol.png');
 }
 
 .bottom-right {
     bottom: 300px;
     right: 300px;
+    transform: rotate(90deg);
     background-image: url('/public/images/Blue_Chol.png');
 }
 
