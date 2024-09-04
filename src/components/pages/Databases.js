@@ -1,5 +1,5 @@
 import React from 'react';
-import './Databases.css';
+import './Resources.css';
 import { Databases } from '../Links';
 import Footer from '../Footer';
 
@@ -12,10 +12,9 @@ function DatabasesPage() {
                 <div class="database-item">
                     <img src="/images/Logo_OPRLM_DB1.jpg" alt="Database Image" class="database-img"/>
                     <div>
-                        <a href={Databases.OPRLM}><h4>OPRLM (Orientations of Proteins in Realistic Lipid Membranes) </h4> </a>
-                        <p class="database-text" style={{fontSize: "13px"}}>
-                            The OPRLM (Orientations of Proteins in Realistic Lipid Membranes) 
-                            database provides experimental 3D structures from the RCSB Protein Data bank 
+                        <a href={Databases.OPRLM}><h3>OPRLM (Orientations of Proteins in Realistic Lipid Membranes) </h3> </a>
+                        <p class="database-text" style={{fontSize: "15px"}}>
+                            The OPRLM database provides experimental 3D structures from the RCSB Protein Data bank 
                             (PDB) of transmembrane TM and peripheral membrane proteins and membrane-active 
                             peptides that are oriented in lipid membranes using the PPM method. OPM offers 
                             structural classification of proteins into families and superfamilies and 
@@ -29,8 +28,8 @@ function DatabasesPage() {
                 <div class="database-item">
                     <img src="/images/Logo_MembranomeX.jpg" alt="Database Image" class="database-img"/>
                     <div>
-                        <a href={Databases.MEMBRANOME}><h4>MembranomeX</h4></a>
-                        <p className="database-text" style={{fontSize: "13px"}}>
+                        <a href={Databases.MEMBRANOME}><h3>MembranomeX</h3></a>
+                        <p className="database-text" style={{fontSize: "15px"}}>
                             The MembranomeX database compiles available structural and functional information 
                             for the complete sets of single-pass transmembrane (i.e., bitopic) proteins from 
                             twenty organisms. The database provides protein classification, amino acid sequences, 
@@ -50,10 +49,9 @@ function DatabasesPage() {
                 <div class="database-item">
                     <img src="/images/Logo_PerMM_DB.jpg" alt="Database Image" class="database-img"/>
                     <div>
-                        <a href={Databases.PERMM}><h4>PerMM (Permeabiity of Molecules across Membranes)</h4></a>
-                        <p className="database-text" style={{fontSize: "13px"}}>
-                            The PerMM (Permeabiity of Molecules across Membranes) database 
-                            collects experimental and calculated permeability coefficients of 
+                        <a href={Databases.PERMM}><h3>PerMM (Permeabiity of Molecules across Membranes)</h3></a>
+                        <p className="database-text" style={{fontSize: "15px"}} >
+                            The PerMM database collects experimental and calculated permeability coefficients of 
                             drug-like molecules obtained for artificial and natural membranes, 
                             including BLM, PAMPA, Caco-2/MDCK cells, and BBB supplemented by 
                             references and other related data. It currently contains 507 molecules, 

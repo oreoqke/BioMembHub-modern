@@ -44,6 +44,34 @@
     transform: scale(1.2);
 }
 
+.funding-section {
+    display: flex;
+    align-items: center;
+    justify-content: left;
+    margin-top: 20px;
+    margin-left: 30px;
+}
+
+.nsf-logo {
+    width: 100px; /* Adjust the size as needed */
+    margin-right: 20px;
+}
+
+.funding-links {
+    display: flex;
+    flex-direction: column;
+}
+
+.funding-links a {
+    color: #0066cc; /* Link color */
+    text-decoration: none;
+    margin-bottom: 10px;
+    font-size: 16px;
+}
+
+.funding-links a:hover {
+    text-decoration: underline;
+}
 
 @media screen and (max-width: 600px) {
     .about {

@@ -69,14 +69,14 @@ function Cards() {
               path={Webservers.PERMM}
             />
               <CardItem
-              src='images/Default.png'
+              src='images/Logo_1TMNet_server.jpg'
               text='1TMNet (Protein Network Analysis) Webserver'
               label='Webserver'
               path={Webservers.TMnet}
             />
             <CardItem
               src='images/CELLPM-logo.jpg'
-              text='CellPM (Cell-Penetrating Peptides) Webserver'
+              text='CellPM (Cell-Penetrating Molecules) Webserver'
               label='Webserver'
               path={Webservers.CELLPM}
             />

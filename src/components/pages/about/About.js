@@ -81,6 +81,16 @@ function About() {
                     <h1 className='section-title'>Our Team</h1>
                     <Team />
                 </section>
+                <section id="funding">
+                    <h1 className="section-title">Funding</h1>
+                    <div className="funding-section">
+                        <img src="images/NSF_logo.jpg" alt="NSF Logo" className="nsf-logo" />
+                        <div className="funding-links">
+                            <a href="https://www.nsf.gov/awardsearch/showAward?AWD_ID=2403503" target="_blank" rel="noopener noreferrer">NSF Award #2403503</a>
+                            <a href="https://www.nsf.gov/awardsearch/showAward?AWD_ID=2403502" target="_blank" rel="noopener noreferrer">NSF Award #2403502</a>
+                        </div>
+                    </div>
+                </section>
                 <section id="acknowledgements">
                     <h1 className='section-title'>Acknowledgements</h1>
                     <p style={{ textAlign: 'center' }}> Thank you to Alexey Kovalenko and Stanislav Cherepanov for the help in creating BioMembHub.</p>               </section>

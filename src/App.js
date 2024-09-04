@@ -8,6 +8,7 @@ import SignUp from './components/pages/SignUp';
 import About from './components/pages/about/About';
 
 import DatabasesPage from './components/pages/Databases.js';
+import WebserversPage from './components/pages/Webservers.js';
 
 function App() {
   return (
@@ -17,7 +18,7 @@ function App() {
         <Routes> {/* Use Routes instead of Switch */}
           <Route path='/' element={<Home />} /> {/* Use element instead of component */}
           <Route path='/databases' element={<DatabasesPage />} />
-          <Route path='/products' element={<Products />} />
+          <Route path='/webservers' element={<WebserversPage />} />
           <Route path='/sign-up' element={<SignUp />} />
           <Route path='/about' element={<About />} />
         </Routes>

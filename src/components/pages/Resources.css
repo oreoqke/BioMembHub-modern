@@ -26,13 +26,18 @@
 }
 
 .database-img {
-    width: 100px;
-    height: 100px;
+    border-radius: 10px;
+    width: 200px;
+    height: 200px;
     margin-right: 20px; /* Space between image and description */
 }
 
 .database-text {
     display: block;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    padding-top: 10px;
+    line-height: 1.7;
+    font-size: 10px;
 }
 
 h3 {
@@ -48,9 +53,13 @@ h3 {
         float: left; /* Keep the image floating left on mobile */
         margin-right: 10px; /* Add smaller spacing on mobile */
         margin-bottom: 10px;
+        border-radius: 5px;
     }
 
     .database-text {
         overflow: hidden; /* Ensure text wraps properly around the image */
+        font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        padding-top: 10px;
+        line-height: 1.7;
     }
 }
