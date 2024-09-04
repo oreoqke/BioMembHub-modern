@@ -69,7 +69,7 @@ function Cards() {
               path={Webservers.PERMM}
             />
               <CardItem
-              src='images/Logo_1TMNet_server.jpg'
+              src='images/Logo_1TMnet_server.jpg'
               text='1TMNet (Protein Network Analysis) Webserver'
               label='Webserver'
               path={Webservers.TMnet}
