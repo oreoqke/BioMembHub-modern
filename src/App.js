@@ -18,7 +18,7 @@ function App() {
           <Route path='/' element={<Home />} /> {/* Use element instead of component */}
           <Route path='/databases' element={<DatabasesPage />} />
           <Route path='/webservers' element={<WebserversPage />} />
-          <Route path='/help' element={<Help />} />
+          {/* <Route path='/help' element={<Help />} /> */}
           <Route path='/about' element={<About />} />
         </Routes>
       </Router>

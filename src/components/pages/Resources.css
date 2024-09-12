@@ -34,7 +34,7 @@
 
 .database-text {
     display: block;
-    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    /* font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; */
     padding-top: 10px;
     line-height: 1.7;
     font-size: 10px;
@@ -58,7 +58,7 @@ h3 {
 
     .database-text {
         overflow: hidden; /* Ensure text wraps properly around the image */
-        font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        /* font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; */
         padding-top: 10px;
         line-height: 1.7;
     }

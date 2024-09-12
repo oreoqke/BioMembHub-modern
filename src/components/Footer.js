@@ -48,7 +48,7 @@ function Footer() {
             <Link to={Links.BitBucket}>BitBucket</Link>
             <Link to='/databases'>Databases</Link>
             <Link to='/webservers'>Webservers</Link>
-            <Link to='/'>Help</Link>
+            {/* <Link to='/'>Help</Link> */}
           </div>
           <div class='footer-link-items'>
             <h2>Contact Info</h2>

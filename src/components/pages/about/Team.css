@@ -49,7 +49,7 @@
 }
 
 .italic-text {
-    font-family: Verdana;
+    /* font-family: Verdana; */
     font-style: italic;
     font-size: 14px; /* Adjust the font size as needed */
     color: #000000; /* Adjust the color as needed */
