@@ -18,7 +18,7 @@ function Cards() {
             />
             <CardItem
               src='images/Logo_MembranomeX_DB2.jpg'
-              text='Membranome Database'
+              text='Single-Pass Transmembrane Proteins from 20 Organisms'
               label='Database'
               path={Databases.MEMBRANOME}
             />
