@@ -8,7 +8,7 @@ function HeroSection() {
     <div className='hero-container'>
       {/* <video src='/videos/video-1.mp4' autoPlay loop muted /> */}
       <h1>BioMembHub</h1>
-      <p> Making Proteins Exciting Again</p>
+      <p> Making Membrane Proteins Exciting Again</p>
       {/* <div className='hero-btns'>
         <Button
           className='btns'

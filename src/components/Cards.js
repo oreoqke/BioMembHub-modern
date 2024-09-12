@@ -12,7 +12,7 @@ function Cards() {
           <ul className='cards__items'>
             <CardItem
               src='images/Logo_OPRLM_DB2.jpg'
-              text='OPRLM (Orientations of Proteins in Realistic Lipid Membranes) Database'
+              text='Orientations of Proteins in Realistic Lipid Membranes'
               label='Database'
               path={Databases.OPRLM}
             />
@@ -24,7 +24,7 @@ function Cards() {
             />
             <CardItem
               src='images/Logo_PerMM_DB2.jpg'
-              text='PerMM (Permeability of Molecules across Membranes) Database'
+              text='Permeability of Molecules across Membranes'
               label='Database'
               path={Databases.PERMM}
             />
@@ -32,25 +32,25 @@ function Cards() {
           <ul className='cards__items'>
             <CardItem
               src='images/Logo_PPM_server.jpg'
-              text='PPM (Positioning of Proteins in Membranes) Webserver'
+              text='Positioning of Proteins in Membranes'
               label='Webserver'
               path={Webservers.PPM}
             />
             <CardItem
               src='images/Logo_OPRLM_server.jpg'
-              text='OPRLM (Orientations of Proteins in Realistic Lipid Membranes) Webserver'
+              text='Orientations of Proteins in Realistic Lipid Membranes'
               label='Webserver'
               path={Webservers.OPRLM}
             />
             <CardItem
               src='images/Logo_FMAP_server.jpg'
-              text='FMAP (Folding of Membrane-Associated Peptides) Webserver'
+              text='Folding of Membrane-Associated Peptides'
               label='Webserver'
               path={Webservers.FMAP}
             />
             <CardItem
               src='images/Logo_TMDOCK_server.jpg'
-              text='TMDOCK (TM helix Docking) Webserver'
+              text='TransMembrane helix Docking'
               label='Webserver'
               path={Webservers.TMDOCK}
             />
@@ -58,25 +58,25 @@ function Cards() {
           <ul className='cards__items'>
           <CardItem
               src='images/Logo_TMPFOLD_server2.jpg'
-              text='TMPfold (TM Protein Folding) Webserver'
+              text='TransMembrane Protein Folding'
               label='Webserver'
               path={Webservers.TMPfold}
             />
             <CardItem
               src='images/Logo_PERMM_server1.jpg'
-              text='PerMM (Permeability of Molecules across Membranes) Webserver'
+              text='Permeability of Molecules across Membranes'
               label='Webserver'
               path={Webservers.PERMM}
             />
               <CardItem
               src='images/Logo_1TMnet_server.jpg'
-              text='1TMnet (Protein Network Analysis) Webserver'
+              text='Protein Network Analysis'
               label='Webserver'
               path={Webservers.TMnet}
             />
             <CardItem
               src='images/CELLPM-logo.jpg'
-              text='CellPM (Cell-Penetrating Molecules) Webserver'
+              text='Cell-Penetrating Peptide Molecules'
               label='Webserver'
               path={Webservers.CELLPM}
             />

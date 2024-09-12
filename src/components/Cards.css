@@ -87,7 +87,7 @@ h1 {
 }
 
 .cards__item__img:hover {
-  transform: scale(1.2);
+  transform: scale(1.05);
 }
 
 .cards__item__info {
