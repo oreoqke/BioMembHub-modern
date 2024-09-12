@@ -8,6 +8,7 @@ import About from './components/pages/about/About';
 import DatabasesPage from './components/pages/Databases.js';
 import WebserversPage from './components/pages/Webservers.js';
 import Help from './components/pages/Help';
+import ScrollTop from './components/ScrollTop';
 
 function App() {
   return (
@@ -16,8 +17,9 @@ function App() {
         <Navbar />
         <Routes> {/* Use Routes instead of Switch */}
           <Route path='/' element={<Home />} /> {/* Use element instead of component */}
-          <Route path='/databases' element={<DatabasesPage />} />
-          <Route path='/webservers' element={<WebserversPage />} />
+          {/*For these two paths, I want to start from the top of the page  */}
+          <Route path='/databases' element={<ScrollTop><DatabasesPage /> </ScrollTop>} />
+          <Route path='/webservers' element={<ScrollTop><WebserversPage /></ScrollTop>} />
           {/* <Route path='/help' element={<Help />} /> */}
           <Route path='/about' element={<About />} />
         </Routes>
