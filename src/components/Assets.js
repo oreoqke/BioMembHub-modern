@@ -39,8 +39,8 @@ const teamPaths = {
     jungyong_ji: "images/team/Jungyong_Ji.jpg",
     l_ponoop_prasad_patro: "images/team/L_Ponoop_Prasad_Patro.jpg",
     sang_jun_park: "images/team/Sang-Jun_Park.jpg",
-    stanislav_cherepanov: "images/team/Stanislav_Cherepanov.jpg",
-    wonpil_im: "images/team/Wonpil_Im.jpg",
+    stanislav_cherepanov: "images/team/stanislav_cherepanov.png",
+    wonpil_im: "images/team/Wonpil_Im.jpeg",
     yongsu_baek: "images/team/Yongsu_Baek.jpg",
     zigang_song: "images/team/Zigang_Song.jpg",
 };
