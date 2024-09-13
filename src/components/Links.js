@@ -1,3 +1,9 @@
+
+
+export const Urls = {
+    cloud_storage_prefix: "https://storage.googleapis.com/biomembhub/"
+};
+
 export const Databases = {
     OPRLM: "https://oprlm.org/",
     MEMBRANOME: "https://membranome.org/",

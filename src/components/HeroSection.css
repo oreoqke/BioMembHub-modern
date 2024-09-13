@@ -8,7 +8,10 @@
 
 .hero-container {
   /*Edit the image to work here*/
-  background: url('../../public/images/BioMembHub2.png') center center/cover no-repeat;
+  /* background: url('../../public/images/BioMembHub2.png') center center/cover no-repeat; */
+  background-position: center center;
+  background-size: cover;
+  background-repeat: no-repeat;
   height: 100vh;
   width: 100%;
   display: flex;
