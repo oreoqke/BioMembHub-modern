@@ -82,17 +82,6 @@
   color: #fff;
 }
 
-/* .social-logo {
-  color: #fff;
-  justify-self: flex-start;
-  margin-left: 20px;
-  cursor: pointer;
-  text-decoration: none;
-  font-size: 2rem;
-  display: flex;
-  align-items: center;
-  margin-bottom: 16px;
-} */
 .footer-logo {
   display: flex; /* Enable Flexbox */
   justify-content: space-between; /* Space the items apart */
