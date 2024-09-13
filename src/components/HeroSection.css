@@ -7,7 +7,19 @@
 } */
 
 .hero-container {
-  /*Edit the image to work here*/
+  background: var(--hero-background) center center/cover no-repeat;
+  height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-bottom: 200px;
+  align-items: center;
+  box-shadow: inset 0 0 0 1000px rgba(0, 0, 0, 0.2);
+}
+
+
+/* .hero-container {
   background: url('../../public/images/BioMembHub3.png') center center/cover no-repeat;
   background-position: center center;
   background-size: cover;
@@ -21,7 +33,7 @@
   align-items: center;
   box-shadow: inset 0 0 0 1000px rgba(0, 0, 0, 0.2);
   object-fit: contain;
-}
+} */
 
 .hero-container > h1 {
   color: #fff;
