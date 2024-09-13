@@ -88,7 +88,7 @@
     width: 100%;
     height: 100vh;
     position: absolute;
-    top: 80px;
+    top: 70px;
     left: -100%;
     opacity: 1;
     transition: all 0.5s ease;
@@ -119,15 +119,16 @@
     position: absolute;
     top: 0;
     left: 0;
-    transform: translate(0%, 35%);
+    transform: translate(0%, 30%);
   }
 
   .menu-icon {
     display: block;
     position: absolute;
+
     top: 0;
     right: 0;
-    transform: translate(-100%, 60%);
+    transform: translate(-130%, 30%);
     font-size: 1.8rem;
     cursor: pointer;
   }
