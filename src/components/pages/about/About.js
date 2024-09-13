@@ -5,6 +5,7 @@ import Footer from '../../Footer';
 import { useLocation} from 'react-router-dom';
 import { Team } from './Team.js';
 import { Contacts } from './Contacts.js';
+import { Assets } from '../../Assets.js';
 
 function Intro() {
     return (
@@ -13,7 +14,7 @@ function Intro() {
                 About Us
             </h1>
             <div class="about">
-                <img src="images/Logo_BMH.png" loading="lazy" alt="BioMemHub"/>
+                <img src={Assets.images.BMH} loading="lazy" alt="BioMemHub"/>
                 <p> The BioMemHub infrastructure is composed of three parts. 
                     The first part includes the {' '}
                     <a href={Databases.OPRLM}>OPRLM</a>{' '}
@@ -72,7 +73,7 @@ function About() {
                 <section id="introduction">
                     <Intro />
                     <img id="scalable-image"
-                         src="images/Architecture.png" 
+                         src={Assets.images.architecture}
                          alt="BioMemHub Architecture" 
                          class='scheme-img'
                          onClick={ToggleSize}/>
@@ -84,7 +85,7 @@ function About() {
                 <section id="funding">
                     <h1 className="section-title">Funding</h1>
                     <div className="funding-section">
-                        <img src="images/NSF_logo.jpg" alt="NSF" loading="lazy" className="nsf-logo" />
+                        <img src={Assets.images.nsf} alt="NSF" loading="lazy" className="nsf-logo" />
                         <div className="funding-links">
                             <a href="https://www.nsf.gov/awardsearch/showAward?AWD_ID=2403583" target="_blank" rel="noopener noreferrer">NSF DBI -2403503</a>
                             {/* <p>Collaborative Research: BioMembHub Cyberinfrastructure for Modeling and Analysis of Proteins, Peptides, and Small Molecules in Biomembranes</p> */}

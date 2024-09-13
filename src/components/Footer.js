@@ -2,6 +2,7 @@ import React from 'react';
 import './Footer.css';
 import { Link } from 'react-router-dom';
 import { Links } from './Links';
+import { Assets } from './Assets';
 
 function Footer() {
   return (
@@ -46,7 +47,7 @@ function Footer() {
       <section class='social-media'>
         <div class='social-media-wrap'>
           <div class='footer-logo'>
-            <img src='images/Lehigh_University.jpg' alt='Im Lab' loading="lazy" className='logo-image'/>
+            <img src={Assets.images.lehigh_university} alt='Im Lab' loading="lazy" className='logo-image'/>
             <small class='website-rights'>Copyright(c) 2024-2026 by the Im Lab</small>
           </div>
 

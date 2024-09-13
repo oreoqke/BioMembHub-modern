@@ -2,6 +2,7 @@ import React from 'react';
 import './Resources.css';
 import { Webservers } from '../Links';
 import Footer from '../Footer';
+import { Assets } from '../Assets';
 
 function WebserversPage() {
     return (
@@ -11,7 +12,7 @@ function WebserversPage() {
 
                 {/* PPM */}
                 <div class="database-item">
-                    <img src="/images/Logo_PPM_server.jpg" alt="Webserver" loading="lazy" class="database-img"/>
+                    <img src={Assets.images.ppm} alt="Webserver" loading="lazy" class="database-img"/>
                     <div>
                         <a href={Webservers.PPM}><h3>PPM (Positioning of Proteins in Membranes)</h3></a>
                         <p className="database-text" style={{ fontSize: "15px" }}>
@@ -28,7 +29,7 @@ function WebserversPage() {
 
                 {/* OPRLM */}
                 <div class="database-item">
-                    <img src="/images/Logo_OPRLM_server.jpg" alt="Webserver" loading="lazy" class="database-img"/>
+                    <img src={Assets.images.oprlm_server} alt="Webserver" loading="lazy" class="database-img"/>
                     <div>
                         <a href={Webservers.OPRLM}><h3>OPRLM (Orientations of Proteins in Realistic Lipid Membranes) </h3></a>
                         <p className="database-text" style={{ fontSize: "15px" }}>
@@ -44,7 +45,7 @@ function WebserversPage() {
 
                 {/* TMPfold */}
                 <div class="database-item">
-                    <img src="/images/Logo_TMPFOLD_server2.jpg" alt="Webserver" loading="lazy" class="database-img"/>
+                    <img src={Assets.images.tmpfold} alt="Webserver" loading="lazy" class="database-img"/>
                     <div>
                         <a href={Webservers.TMPfold}><h3>TMPfold (TM Protein folding) </h3></a>
                         <p className="database-text" style={{ fontSize: "15px" }}>
@@ -63,7 +64,7 @@ function WebserversPage() {
 
 
                 <div class="database-item">
-                    <img src="/images/Logo_FMAP_server.jpg" alt="Webserver" loading="lazy" class="database-img"/>
+                    <img src={Assets.images.fmap} alt="Webserver" loading="lazy" class="database-img"/>
                     <div>
                         <a href={Webservers.FMAP}><h3> FMAP (Folding of Membrane-Associated Peptides) </h3></a>
                         <p className="database-text" style={{ fontSize: "15px" }}>
@@ -80,7 +81,7 @@ function WebserversPage() {
 
                 {/* 1TMnet */}
                 <div class="database-item">
-                    <img src="/images/Logo_1TMnet_server.jpg" alt="Webserver" loading="lazy" class="database-img"/>
+                    <img src={Assets.images.tmnet_server} alt="Webserver" loading="lazy" class="database-img"/>
                     <div>
                         <a href={Webservers.TMnet}><h3> 1TMnet </h3></a>
                         <p className="database-text" style={{ fontSize: "15px" }}>
@@ -95,7 +96,7 @@ function WebserversPage() {
                 </div>
 
                 <div class="database-item">
-                    <img src="/images/Logo_TMDOCK_server.jpg" alt="Webserver" loading="lazy" class="database-img"/>
+                    <img src={Assets.images.tmdock} alt="Webserver" loading="lazy" class="database-img"/>
                     <div>
                         <a href={Webservers.TMDOCK}><h3> TMDOCK (TM helix DOCKing) </h3></a>
                         <p className="database-text" style={{ fontSize: "15px" }}>
@@ -112,7 +113,7 @@ function WebserversPage() {
                 </div>
 
                 <div class="database-item">
-                    <img src="/images/Logo_PERMM_server1.jpg" alt="Webserver" loading="lazy" class="database-img"/>
+                    <img src={Assets.images.permm_server} alt="Webserver" loading="lazy" class="database-img"/>
                     <div>
                         <a href={Webservers.PERMM}><h3> PerMM (Permeability of Molecules across Membranes) </h3></a>
                         <p className="database-text" style={{ fontSize: "15px" }}>
@@ -132,7 +133,7 @@ function WebserversPage() {
                     </div>
                 </div>
                 <div class="database-item">
-                    <img src="/images/CELLPM-logo.jpg" alt="Webserver" loading="lazy" class="database-img"/>
+                    <img src={Assets.images.cellpm} alt="Webserver" loading="lazy" class="database-img"/>
                     <div>
                         <a href={Webservers.CELLPM}><h3> CellPM </h3></a>
                         <p className="database-text" style={{ fontSize: "15px" }}>

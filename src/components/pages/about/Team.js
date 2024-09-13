@@ -1,66 +1,67 @@
 import React from 'react';
 import './Team.css';
+import { Assets } from '../../Assets';
 
 export function Team() {
     const teamMembers = [
         {
             name: "Wonpil Im",
-            image: "images/team/Wonpil_Im.jpg",
+            image: Assets.team.wonpil_im,
             role: "Professor of Biological Sciences",
             department: "Bioengineering and Computer Sciences and Engineering",
             university: "Lehigh University"
         },
         {
             name: "Andrei Lomize",
-            image: "images/team/Andrei_Lomize.jpg",
+            image: Assets.team.andrei_lomize,
             role: "Research Scientist",
             department: "Department of Medicinal Chemistry",
             university: "University of Michigan"
         },
         {
             name: "Alexey Kovalenko",
-            image: "images/team/Alexey_Kovalenko.jpg",
+            image: Assets.team.alexey_kovalenko,
             role: "Undergraduate Student",
             department: "College of Literature, Science, and the Arts",
             university: "University of Michigan"
         },
         {
             name: "L Ponoop Prasad Patro",
-            image: "images/team/L_Ponoop_Prasad_Patro.jpg",
+            image: Assets.team.l_ponoop_prasad_patro,
             role: "Postdoctoral Fellow",
             department: "Biological Sciences",
             university: "Lehigh University"
         },
         {
             name: "Sang-Jun Park",
-            image: "images/team/Sang-Jun_Park.jpg",
+            image: Assets.team.sang_jun_park,
             role: "Graduate Student",
             department: "Computer Sciences and Engineering",
             university: "Lehigh University"
         },
         {
             name: "Zigang Song",
-            image: "images/team/Zigang_Song.jpg",
+            image: Assets.team.zigang_song,
             role: "Graduate Student",
             department: "Biological Sciences",
             university: "Lehigh University"
         },
         {
             name: "Stanislav Cherepanov",
-            image: "images/team/Stanislav_Cherepanov.jpg",
+            image: Assets.team.stanislav_cherepanov,
             role: "Graduate Student",
             department: "Biophysics Program",
             university: "University of Michigan"
         },
         {
             name: "Yongsu Baek",
-            image: "images/team/Yongsu_Baek.jpg",
+            image: Assets.team.yongsu_baek,
             role: "Scientist",
             company: "MolCube Inc."
         },
         {
             name: "Jungyong Ji",
-            image: "images/team/Jungyong_Ji.jpg",
+            image: Assets.team.jungyong_ji,
             role: "Junior Scientist",
             company: "MolCube Inc."
         }
