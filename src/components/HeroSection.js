@@ -5,10 +5,10 @@ import './HeroSection.css';
 import { Assets } from './Assets';
 
 function HeroSection() {
-  useEffect(() => {
-    const heroElement = document.querySelector('.hero-container');
-    heroElement.style.backgroundImage = `url(${Assets.images.home_background})`;
-  }, []);
+  // useEffect(() => {
+  //   const heroElement = document.querySelector('.hero-container');
+  //   heroElement.style.backgroundImage = `url(${Assets.images.home_background})`;
+  // }, []);
   return (
     <div className='hero-container'>
       {/* <video src='/videos/video-1.mp4' autoPlay loop muted /> */}
