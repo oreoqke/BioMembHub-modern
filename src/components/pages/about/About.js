@@ -13,7 +13,7 @@ function Intro() {
                 About Us
             </h1>
             <div class="about">
-                <img src="images/Logo_BMH.png" alt="BioMemHub Logo"/>
+                <img src="images/Logo_BMH.png" loading="lazy" alt="BioMemHub Logo"/>
                 <p> The BioMemHub infrastructure is composed of three parts. 
                     The first part includes the {' '}
                     <a href={Databases.OPRLM}>OPRLM</a>{' '}
@@ -84,7 +84,7 @@ function About() {
                 <section id="funding">
                     <h1 className="section-title">Funding</h1>
                     <div className="funding-section">
-                        <img src="images/NSF_logo.jpg" alt="NSF Logo" className="nsf-logo" />
+                        <img src="images/NSF_logo.jpg" alt="NSF Logo" loading="lazy" className="nsf-logo" />
                         <div className="funding-links">
                             <a href="https://www.nsf.gov/awardsearch/showAward?AWD_ID=2403583" target="_blank" rel="noopener noreferrer">NSF DBI -2403503</a>
                             {/* <p>Collaborative Research: BioMembHub Cyberinfrastructure for Modeling and Analysis of Proteins, Peptides, and Small Molecules in Biomembranes</p> */}

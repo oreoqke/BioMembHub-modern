@@ -72,7 +72,7 @@ export function Team() {
                 {teamMembers.map((member, index) => (
                     <div className='column' key={index}>
                         <div className='container'>
-                            <img src={member.image} alt={`Team Member ${member.name}`} className="container-image" />
+                            <img src={member.image} alt={`Team Member ${member.name}`} loading="lazy" className="container-image" />
                             <h3>{member.name}</h3>
                             <div className="italic-text">
                                 {member.role} <br />

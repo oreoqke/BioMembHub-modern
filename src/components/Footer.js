@@ -66,7 +66,7 @@ function Footer() {
           {/* <div className='footer-logo'>
           </div> */}
           <div class='footer-logo'>
-            <img src='images/Lehigh_University.jpg' alt='Im Lab' className='logo-image'/>
+            <img src='images/Lehigh_University.jpg' alt='Im Lab' loading="lazy" className='logo-image'/>
             <small class='website-rights'>Copyright(c) 2024-2026 by the Im Lab</small>
           </div>
           {/* <div class='social-icons'>
