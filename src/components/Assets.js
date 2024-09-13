@@ -14,7 +14,7 @@ const prependCloudPrefix = (paths) => {
 
 // Define image paths without prefix
 const imagePaths = {
-    home_background: "images/BioMembHub8.webp",
+    home_background: cloud_storage_prefix + "images/BioMembHub8.webp",
     architecture: "images/Architecture.png",
     cellpm: "images/CELLPM-logo.jpg",
     tmnet_server: "images/Logo_1TMnet_server.jpg",
