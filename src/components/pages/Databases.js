@@ -5,6 +5,8 @@ import Footer from '../Footer';
 import { Assets } from '../Assets';
 
 function DatabasesPage() {
+    const fontSize = "17px"; // for some reason my css stopped working so I had to use inline styling
+
     return (
         <>
             <div class="page-container">
@@ -14,7 +16,7 @@ function DatabasesPage() {
                     <img src={Assets.images.oprlm_db} alt="Database" loading="lazy" class="database-img"/>
                     <div>
                         <a href={Databases.OPRLM}><h3>OPRLM (Orientations of Proteins in Realistic Lipid Membranes) </h3> </a>
-                        <p class="database-text" style={{fontSize: "15px"}}>
+                        <p class="database-text" style={{fontSize: fontSize}}>
                             The OPRLM database provides experimental 3D structures from the RCSB Protein Data bank 
                             (PDB) of transmembrane TM and peripheral membrane proteins and membrane-active 
                             peptides that are oriented in lipid membranes using the PPM method. OPM offers 
@@ -30,7 +32,7 @@ function DatabasesPage() {
                     <img src={Assets.images.MEMBRANOME} alt="Database" loading="lazy" class="database-img"/>
                     <div>
                         <a href={Databases.MEMBRANOME}><h3>MembranomeX</h3></a>
-                        <p className="database-text" style={{fontSize: "15px"}}>
+                        <p className="database-text" style={{fontSize: fontSize}}>
                             The MembranomeX database compiles available structural and functional information 
                             for the complete sets of single-pass transmembrane (i.e., bitopic) proteins from 
                             twenty organisms. The database provides protein classification, amino acid sequences, 
@@ -51,7 +53,7 @@ function DatabasesPage() {
                     <img src={Assets.images.permm_db} alt="Database" loading="lazy" class="database-img"/>
                     <div>
                         <a href={Databases.PERMM}><h3>PerMM (Permeabiity of Molecules across Membranes)</h3></a>
-                        <p className="database-text" style={{fontSize: "15px"}} >
+                        <p className="database-text" style={{fontSize: fontSize}} >
                             The PerMM database collects experimental and calculated permeability coefficients of 
                             drug-like molecules obtained for artificial and natural membranes, 
                             including BLM, PAMPA, Caco-2/MDCK cells, and BBB supplemented by 

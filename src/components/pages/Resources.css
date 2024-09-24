@@ -40,12 +40,6 @@
     font-size: 10px;
 }
 
-h3 {
-    margin: 0; /* Remove default margin from h3 */
-    padding: 0; /* Remove default padding */
-    text-align: left;
-}
-
 @media screen and (max-width: 600px) {
     .database-img {
         width: 50px;

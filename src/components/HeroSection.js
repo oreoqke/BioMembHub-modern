@@ -11,7 +11,7 @@ function HeroSection() {
       style={{ '--hero-background': `url(${Assets.images.home_background})` }}
     >
       <h1>BioMembHub</h1>
-      <p> Making Membrane Proteins Exciting Again</p>
+      <p>Making Membrane Proteins Exciting Again</p>
     </div>
   );
 }

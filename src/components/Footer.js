@@ -19,7 +19,7 @@ function Footer() {
             <a href={Links.Department_of_Bioengineering}>Department of Bioengineering</a>
           </div>
           <div class='footer-link-items'>
-            <h2>About Us</h2>
+            <h2>About</h2>
             <Link to='/about#team'>Our Team</Link>
             <Link to='/about#contact'>Contact</Link>
             <a href={Links.Lomize_Group}>Lomize Group</a>

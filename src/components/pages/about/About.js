@@ -11,7 +11,7 @@ function Intro() {
     return (
         <div>
             <h1 className='section-title'>
-                About Us
+                About
             </h1>
             <div class="about">
                 <img src={Assets.images.BMH} loading="lazy" alt="BioMemHub"/>

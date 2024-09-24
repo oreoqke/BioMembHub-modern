@@ -5,6 +5,7 @@ import Footer from '../Footer';
 import { Assets } from '../Assets';
 
 function WebserversPage() {
+    const fontSize = "17px";
     return (
         <>
             <div class="page-container">
@@ -15,7 +16,7 @@ function WebserversPage() {
                     <img src={Assets.images.ppm} alt="Webserver" loading="lazy" class="database-img"/>
                     <div>
                         <a href={Webservers.PPM}><h3>PPM (Positioning of Proteins in Membranes)</h3></a>
-                        <p className="database-text" style={{ fontSize: "15px" }}>
+                        <p className="database-text" style={{ fontSize: fontSize }}>
                         The PPM web server allows 
                         calculation of translational and rotational positions of transmembrane 
                         and peripheral membrane proteins in flat and curved lipid bilayers 
@@ -32,7 +33,7 @@ function WebserversPage() {
                     <img src={Assets.images.oprlm_server} alt="Webserver" loading="lazy" class="database-img"/>
                     <div>
                         <a href={Webservers.OPRLM}><h3>OPRLM (Orientations of Proteins in Realistic Lipid Membranes) </h3></a>
-                        <p className="database-text" style={{ fontSize: "15px" }}>
+                        <p className="database-text" style={{ fontSize: fontSize }}>
                             The OPRLM web server combines PPM with CHARMM-GUI Membrane Builder to facilitate 
                             generation of protein-lipid simulation systems and input files for 
                             all-atom molecular dynamics simulations. It allows inserting of a 
@@ -48,7 +49,7 @@ function WebserversPage() {
                     <img src={Assets.images.tmpfold} alt="Webserver" loading="lazy" class="database-img"/>
                     <div>
                         <a href={Webservers.TMPfold}><h3>TMPfold (TM Protein folding) </h3></a>
-                        <p className="database-text" style={{ fontSize: "15px" }}>
+                        <p className="database-text" style={{ fontSize: fontSize }}>
                         The TMPfold web tool calculates the free energy 
                         of TM α-helix association in proteins with known 3D structures and 
                         can be used for analysis of possible folding intermediates and 
@@ -67,7 +68,7 @@ function WebserversPage() {
                     <img src={Assets.images.fmap} alt="Webserver" loading="lazy" class="database-img"/>
                     <div>
                         <a href={Webservers.FMAP}><h3> FMAP (Folding of Membrane-Associated Peptides) </h3></a>
-                        <p className="database-text" style={{ fontSize: "15px" }}>
+                        <p className="database-text" style={{ fontSize: fontSize }}>
                         The FMAP (Folding of Membrane-Associated Peptides) web server 
                         allows identification and modeling of α-helices in different 
                         environments. Using an amino acid sequence and experimental 
@@ -84,7 +85,7 @@ function WebserversPage() {
                     <img src={Assets.images.tmnet_server} alt="Webserver" loading="lazy" class="database-img"/>
                     <div>
                         <a href={Webservers.TMnet}><h3> 1TMnet </h3></a>
-                        <p className="database-text" style={{ fontSize: "15px" }}>
+                        <p className="database-text" style={{ fontSize: fontSize }}>
                         1TMnet visualizes the networks of bitopic proteins participating in 
                         different complexes and cellular pathways. For a set of user-selected 
                         proteins from the database, 1TMnet generates interactive tables and 
@@ -99,7 +100,7 @@ function WebserversPage() {
                     <img src={Assets.images.tmdock} alt="Webserver" loading="lazy" class="database-img"/>
                     <div>
                         <a href={Webservers.TMDOCK}><h3> TMDOCK (TM helix DOCKing) </h3></a>
-                        <p className="database-text" style={{ fontSize: "15px" }}>
+                        <p className="database-text" style={{ fontSize: fontSize }}>
                         The TMDOCK web server generates 3D models 
                         of TM α-helical dimers by threading a target amino acid sequence 
                         through several structural templates followed by local energy 
@@ -116,7 +117,7 @@ function WebserversPage() {
                     <img src={Assets.images.permm_server} alt="Webserver" loading="lazy" class="database-img"/>
                     <div>
                         <a href={Webservers.PERMM}><h3> PerMM (Permeability of Molecules across Membranes) </h3></a>
-                        <p className="database-text" style={{ fontSize: "15px" }}>
+                        <p className="database-text" style={{ fontSize: fontSize }}>
                         The PerMM web tool allows assessment of passive permeability 
                         of small organic molecules across the lipid bilayer. The 
                         underlying method is based on solubility-diffusion theory 
@@ -136,7 +137,7 @@ function WebserversPage() {
                     <img src={Assets.images.cellpm} alt="Webserver" loading="lazy" class="database-img"/>
                     <div>
                         <a href={Webservers.CELLPM}><h3> CellPM </h3></a>
-                        <p className="database-text" style={{ fontSize: "15px" }}>
+                        <p className="database-text" style={{ fontSize: fontSize }}>
                         The CellPM web server is a physics-based computational 
                         tool for analysis of peptide-membrane interactions and 
                         prediction of peptide’s ability to cross the lipid bilayer 
