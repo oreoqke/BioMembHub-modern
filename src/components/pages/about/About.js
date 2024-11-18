@@ -25,9 +25,9 @@ function Intro() {
                     <a href={Webservers.OPRLM}>OPRLM</a>, and {' '}
                     <a href={Webservers.TMPfold}> TMPfold</a>{' '}
                     web servers. The second part consists of the {' '}
-                    <a href={Databases.MEMBRANOMEX}>MEMBRANOMEX</a>{' '}
+                    <a href={Databases.MEMBRANOMEX}>MembranomeX</a>{' '}
                     database, a successor to the {' '}
-                    <a href={Databases.MEMBRANOME}>MEMBRANOME</a>{' '}
+                    <a href={Databases.MEMBRANOME}>Membranome</a>{' '}
                     database and the associated {' '}
                     <a href={Webservers.TMDOCK}>TMDOCK</a>,{' '}
                     <a href={Webservers.FMAP}>FMAP</a>, and {' '}

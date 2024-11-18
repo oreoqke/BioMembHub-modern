@@ -6,8 +6,8 @@ export const Urls = {
 
 export const Databases = {
     OPRLM: "https://oprlm.org/",
-    MEMBRANOME: "https://membranome.org/",
-    PERMM: "https://permm.phar.umich.edu/",
+    MEMBRANOME: "https://biomembhub.org/membranome/",
+    PERMM: "https://biomembhub.org/permm/",
     OPM: "https://opm.phar.umich.edu/",
     MEMBRANOMEX: "",
 }
@@ -15,12 +15,12 @@ export const Databases = {
 export const Webservers = {
     PPM: "https://opm.phar.umich.edu/ppm_server",
     OPRLM: "https://oprlm.org/oprlm_server",
-    FMAP: "https://membranome.org/fmap_cgopm",
-    TMDOCK: "https://membranome.org/tmdock_cgopm",
+    FMAP: "https://biomembhub.org/membranome/fmap_cgopm",
+    TMDOCK: "https://biomembhub.org/membranome/tmdock_cgopm",
     TMPfold: " https://opm.phar.umich.edu/tmpfold_server_cgopm",
-    TMnet: "https://membranome.org/1tmnet",
-    PERMM: "https://permm.phar.umich.edu/",
-    CELLPM: "https://cellpm.org/",
+    TMnet: "https://biomembhub.org/membranome/1tmnet",
+    PERMM: "https://biomembhub.org/permm/",
+    CELLPM: "https://biomembhub.org/cellpm/",
 }
 
 export const Links = {

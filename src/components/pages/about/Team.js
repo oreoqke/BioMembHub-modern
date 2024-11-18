@@ -52,19 +52,19 @@ export function Team() {
             role: "Graduate Student",
             department: "Biophysics Program",
             university: "University of Michigan"
-        },
-        {
-            name: "Yongsu Baek",
-            image: Assets.team.yongsu_baek,
-            role: "Scientist",
-            company: "MolCube Inc."
-        },
-        {
-            name: "Jungyong Ji",
-            image: Assets.team.jungyong_ji,
-            role: "Junior Scientist",
-            company: "MolCube Inc."
         }
+        // {
+        //     name: "Yongsu Baek",
+        //     image: Assets.team.yongsu_baek,
+        //     role: "Scientist",
+        //     company: "MolCube Inc."
+        // },
+        // {
+        //     name: "Jungyong Ji",
+        //     image: Assets.team.jungyong_ji,
+        //     role: "Junior Scientist",
+        //     company: "MolCube Inc."
+        // }
     ];
 
     return (
