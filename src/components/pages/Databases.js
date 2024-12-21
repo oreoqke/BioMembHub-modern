@@ -19,7 +19,7 @@ function DatabasesPage() {
                         <p class="database-text" style={{fontSize: fontSize}}>
                             The OPRLM database provides experimental 3D structures from the RCSB Protein Data bank 
                             (PDB) of transmembrane TM and peripheral membrane proteins and membrane-active 
-                            peptides that are oriented in lipid membranes using the PPM method. OPM offers 
+                            peptides that are oriented in lipid membranes using the PPM method. OPRLM offers 
                             structural classification of proteins into families and superfamilies and 
                             various browsing, searching, sorting, and visualization options, such as 
                             displaying images simultaneously for all proteins from specific families, 

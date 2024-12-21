@@ -31,4 +31,5 @@ export const Links = {
     Im_Lab: "https://compbio.lehigh.edu/",
     Lomize_Group: "https://pharmacy.umich.edu/lomize-group/",
     BitBucket: "https://bitbucket.org/lomize-group/workspace/overview/",
+    GitLab: "https://cggit.cc.lehigh.edu/groups/biomembhub"
 }

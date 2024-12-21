@@ -15,7 +15,7 @@ export function Contacts() {
             <div class="contact-item">
                 <p class="contact-name">Andrei Lomize</p>
                 <p class="contact-email"> almz@umich.edu </p>
-                <p> 734-819-1072</p>
+                <p> 734-925-2370</p>
                 <p> 428 Church Street <br/> Ann Arbor, MI 49109-1065</p>
             </div>
         </div>
