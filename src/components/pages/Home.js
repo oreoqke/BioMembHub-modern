@@ -29,7 +29,7 @@ function Intro() {
               (<a href={Databases.OPRLM}>OPRLM</a>,{' '} 
               <a href={Databases.MEMBRANOME}>Membranome</a>, and{' '}
               <a href={Databases.PERMM}>PerMM</a>){' '}
-              and 8 webservers (
+              and 8 web servers (
               <a href={Webservers.PPM}>PPM</a>,{' '}
               <a href={Webservers.OPRLM}>OPRLM</a>,{' '}
               <a href={Webservers.FMAP}>FMAP</a>,{' '}

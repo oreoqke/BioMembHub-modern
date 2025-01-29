@@ -33,25 +33,25 @@ function Cards() {
             <CardItem
               src={Assets.images.ppm}
               text='Positioning of Proteins in Membranes'
-              label='Webserver'
+              label='Web Server'
               path={Webservers.PPM}
             />
             <CardItem
               src={Assets.images.oprlm_server}
               text='Orientations of Proteins in Realistic Lipid Membranes'
-              label='Webserver'
+              label='Web Server'
               path={Webservers.OPRLM}
             />
             <CardItem
               src={Assets.images.fmap}
               text='Folding of Membrane-Associated Peptides'
-              label='Webserver'
+              label='Web Server'
               path={Webservers.FMAP}
             />
             <CardItem
               src={Assets.images.tmdock}
               text='TransMembrane helix Docking'
-              label='Webserver'
+              label='Web Server'
               path={Webservers.TMDOCK}
             />
           </ul>
@@ -59,25 +59,25 @@ function Cards() {
           <CardItem
               src={Assets.images.tmpfold}
               text='TransMembrane Protein Folding'
-              label='Webserver'
+              label='Web Server'
               path={Webservers.TMPfold}
             />
             <CardItem
               src={Assets.images.permm_server}
               text='Permeability of Molecules across Membranes'
-              label='Webserver'
+              label='Web Server'
               path={Webservers.PERMM}
             />
               <CardItem
               src={Assets.images.tmnet_server}
               text='Protein Network Analysis'
-              label='Webserver'
+              label='Web Server'
               path={Webservers.TMnet}
             />
             <CardItem
               src={Assets.images.cellpm}
               text='Cell-Penetrating Peptide Molecules'
-              label='Webserver'
+              label='Web Server'
               path={Webservers.CELLPM}
             />
           </ul>

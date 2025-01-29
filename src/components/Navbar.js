@@ -67,7 +67,7 @@ function Navbar() {
                 className='nav-links'
                 onClick={closeMobileMenu}
               >
-                Webservers
+                Web Servers
               </Link>
             </li>
             {/* <li className='nav-item'>
