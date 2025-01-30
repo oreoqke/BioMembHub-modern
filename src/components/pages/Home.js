@@ -37,8 +37,7 @@ function Intro() {
               <a href={Webservers.TMPfold}>TMPfold</a>,{' '}
               <a href={Webservers.TMnet}>1TMnet</a>,{' '}
               <a href={Webservers.PERMM}>PerMM</a>, and{' '}
-              <a href={Webservers.CELLPM}>CellPM</a>)
-              . It was developed to facilitate all-atom modeling and analysis 
+              <a href={Webservers.CELLPM}>CellPM</a>). It was developed to facilitate all-atom modeling and analysis 
               of folding, stability, spatial positions, and interactions of proteins,
               peptides, and small molecules in implicit and explicit
               membranes of different complexity. These web resources facilitate insights into
