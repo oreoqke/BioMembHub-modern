@@ -36,7 +36,7 @@ function Footer() {
           </div>
           <div class='footer-link-items'>
             <h2>Contact Info</h2>
-            <p class="contact-email" style={{color: "#fff"}}> almz@umich.edu</p>
+            <p class="contact-email" style={{color: "#fff"}}> lomizeal@gmail.com</p>
             <p class="contact-email" style={{color: "#fff"}}> wonpil@lehigh.edu</p>
             <p class="contact-address">(610) 758-4524</p>
             <p class="contact-address"> Iacocca Hall, 111 Research Drive<br/>
