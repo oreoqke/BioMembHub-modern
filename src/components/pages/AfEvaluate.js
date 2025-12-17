@@ -29,6 +29,8 @@ function AfEvaluate() {
   const [resultsJobId, setResultsJobId] = useState('');
   const [selectedResultIndex, setSelectedResultIndex] = useState(null);
   const [selectedAlignment, setSelectedAlignment] = useState(null);
+  const [jobIdInput, setJobIdInput] = useState('');
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const stopPolling = () => {
     if (pollerRef.current) {
@@ -189,6 +191,79 @@ function AfEvaluate() {
     [getAlignmentsFromResult, loadAlignmentStructure]
   );
 
+  const fetchStatusOnce = useCallback(async (id) => {
+    if (!id) return;
+    try {
+      const response = await fetch(
+        `${STATUS_ENDPOINT}?job_id=${encodeURIComponent(id)}`
+      );
+      if (!response.ok) {
+        const errText = (await response.text()) || response.statusText;
+        throw new Error(errText || 'Could not fetch job status.');
+      }
+      const data = await response.json();
+      const statusFromApi = data.status || data.state || 'unknown';
+      setStatus(statusFromApi);
+      setLastCheckedAt(new Date().toLocaleTimeString());
+    } catch (err) {
+      setError(
+        err?.message
+          ? `Could not fetch job status: ${err.message}`
+          : 'Could not fetch job status.'
+      );
+      setLastCheckedAt(new Date().toLocaleTimeString());
+    }
+  }, []);
+
+  const handleFetchExistingResults = async () => {
+    const id = jobIdInput.trim();
+    if (!id) {
+      setResultsError('Enter a job_id to load results.');
+      return;
+    }
+    stopPolling();
+    setJobId(id);
+    setError('');
+    setStatus('');
+    setResultsError('');
+    setLastCheckedAt('');
+    setResultsJobId(id);
+    await fetchStatusOnce(id);
+    await fetchResults(id);
+  };
+
+  const downloadResultsArchive = async () => {
+    const id = (jobIdInput || jobId || '').trim();
+    if (!id) {
+      setResultsError('Enter a job_id to download results.');
+      return;
+    }
+    setResultsError('');
+    setIsDownloading(true);
+    try {
+      const response = await fetch(
+        `${BASE_URL}/af_evaluate/${encodeURIComponent(id)}/download`
+      );
+      if (!response.ok) {
+        const errText = (await response.text()) || response.statusText;
+        throw new Error(errText || 'Could not download results.');
+      }
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${id}.tar.gz`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      setResultsError(err?.message || 'Could not download results.');
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
   const handleSelectResult = (index) => {
     if (!results[index]) return;
     setSelectedResultIndex(index);
@@ -307,6 +382,7 @@ function AfEvaluate() {
       }
 
       setJobId(returnedJobId);
+      setJobIdInput(returnedJobId);
       setStatus(data.status || 'submitted');
       startPolling(returnedJobId);
     } catch (err) {
@@ -451,6 +527,41 @@ function AfEvaluate() {
                 job: {jobId.length > 8 ? `${jobId.slice(0, 8)}...` : jobId}
               </span>
             )}
+          </div>
+
+          <div className='af-manual-controls'>
+            <label className='af-label' htmlFor='af-job-id-input'>
+              Load previous job
+            </label>
+            <div className='af-job-actions'>
+              <input
+                id='af-job-id-input'
+                type='text'
+                value={jobIdInput}
+                onChange={(e) => setJobIdInput(e.target.value)}
+                placeholder='Enter job_id'
+                className='af-text-input'
+              />
+              <button
+                type='button'
+                className='af-file-btn'
+                onClick={handleFetchExistingResults}
+                disabled={isFetchingResults}
+              >
+                {isFetchingResults ? 'Loading...' : 'Load results'}
+              </button>
+              <button
+                type='button'
+                className='af-file-btn'
+                onClick={downloadResultsArchive}
+                disabled={isDownloading}
+              >
+                {isDownloading ? 'Downloading...' : 'Download all (.tar.gz)'}
+              </button>
+            </div>
+            <p className='af-helper-text'>
+              Enter a job_id to retrieve results or download the full archive.
+            </p>
           </div>
 
           {isFetchingResults && (
