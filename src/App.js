@@ -9,6 +9,7 @@ import DatabasesPage from './components/pages/Databases.js';
 import WebserversPage from './components/pages/Webservers.js';
 import Help from './components/pages/Help';
 import ScrollTop from './components/ScrollTop';
+import AfEvaluate from './components/pages/AfEvaluate';
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
           {/*For these two paths, I want to start from the top of the page  */}
           <Route path='/databases' element={<ScrollTop><DatabasesPage /> </ScrollTop>} />
           <Route path='/webservers' element={<ScrollTop><WebserversPage /></ScrollTop>} />
+          <Route path='/af_evaluate' element={<ScrollTop><AfEvaluate /></ScrollTop>} />
           {/* <Route path='/help' element={<Help />} /> */}
           <Route path='/about' element={<About />} />
         </Routes>

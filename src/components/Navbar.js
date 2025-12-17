@@ -72,6 +72,15 @@ function Navbar() {
             </li>
             {/* <li className='nav-item'>
               <Link
+                to='/af_evaluate'
+                className='nav-links'
+                onClick={closeMobileMenu}
+              >
+                AF Evaluate
+              </Link>
+            </li> */}
+            {/* <li className='nav-item'>
+              <Link
                 to='/help'
                 className='nav-links'
                 onClick={closeMobileMenu}
