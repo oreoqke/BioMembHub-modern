@@ -5,6 +5,7 @@ import { MolScriptBuilder as MS } from 'molstar/lib/mol-script/language/builder'
 import { StructureSelection } from 'molstar/lib/mol-model/structure';
 import { StructureSelectionQueries } from 'molstar/lib/mol-plugin-state/helpers/structure-selection-query';
 import { setStructureTransparency } from 'molstar/lib/mol-plugin-state/helpers/structure-transparency';
+import JSZip from 'jszip';
 import 'molstar/build/viewer/molstar.css';
 import './AfEvaluate.css';
 
@@ -23,8 +24,12 @@ function AfEvaluate() {
   const viewerInitRef = useRef(null);
   const pollerRef = useRef(null);
   const fileInputRef = useRef(null);
+  const folderInputRef = useRef(null);
 
-  const [selectedFile, setSelectedFile] = useState(null);
+  const [selectedArchive, setSelectedArchive] = useState(null);
+  const [selectedFolderFiles, setSelectedFolderFiles] = useState([]);
+  const [folderHasMap, setFolderHasMap] = useState(false);
+  const [mapCodesText, setMapCodesText] = useState('');
   const [jobId, setJobId] = useState('');
   const [status, setStatus] = useState('');
   const [error, setError] = useState('');
@@ -138,6 +143,95 @@ function AfEvaluate() {
   const normalizeValue = (value) => {
     if (value === null || value === undefined) return '';
     return String(value).toLowerCase();
+  };
+
+  const isMapFile = (file) => {
+    if (!file) return false;
+    const relPath = file.webkitRelativePath || file.name || '';
+    const normalized = normalizeValue(relPath);
+    return normalized.endsWith('/map.txt') || normalized === 'map.txt';
+  };
+
+  const getRelativePathWithoutRoot = (file) => {
+    if (!file) return '';
+    const relPath = file.webkitRelativePath || file.name || '';
+    const parts = relPath.split('/');
+    return parts.length > 1 ? parts.slice(1).join('/') : parts[0];
+  };
+
+  const getRootFolderName = (files) => {
+    if (!files || !files.length) return '';
+    const sample = files[0];
+    if (!sample?.webkitRelativePath) return '';
+    const parts = sample.webkitRelativePath.split('/');
+    return parts.length ? parts[0] : '';
+  };
+
+  const buildMapFileFromCodes = (files, codesText) => {
+    const fileNames = Array.from(files || [])
+      .filter((file) => file && !isMapFile(file))
+      .map((file) => getRelativePathWithoutRoot(file))
+      .filter(Boolean)
+      .sort((a, b) => a.localeCompare(b));
+
+    if (!fileNames.length) {
+      throw new Error('No files found in the selected folder to include in map.txt.');
+    }
+
+    const codes = (codesText || '')
+      .split(/\r?\n/)
+      .map((entry) => entry.trim())
+      .filter(Boolean);
+
+    if (!codes.length) {
+      throw new Error('Please provide at least one UniProt code to build map.txt.');
+    }
+
+    if (!(codes.length === 1 || codes.length === fileNames.length)) {
+      throw new Error(
+        `Provide either one code for all files or ${fileNames.length} codes (one per file) to build map.txt.`
+      );
+    }
+
+    const lines = fileNames.map((name, index) => {
+      const code = codes.length === 1 ? codes[0] : codes[index];
+      return `${name} ${code}`;
+    });
+
+    const content = `${lines.join('\n')}\n`;
+    return new File([content], 'map.txt', { type: 'text/plain' });
+  };
+
+  const zipFolderWithMap = async (files, mapFile) => {
+    const zip = new JSZip();
+    const rootName = getRootFolderName(files) || 'upload';
+
+    const addFileToZip = async (file) => {
+      if (!file) return;
+      const relPath = getRelativePathWithoutRoot(file);
+      if (!relPath) return;
+      const data = await file.arrayBuffer();
+      zip.file(relPath, data);
+    };
+
+    // Add all original files except any existing map that will be replaced.
+    for (const file of files) {
+      if (isMapFile(file) && mapFile) {
+        continue;
+      }
+      await addFileToZip(file);
+    }
+
+    if (mapFile) {
+      await addFileToZip(mapFile);
+    }
+
+    const blob = await zip.generateAsync({
+      type: 'blob',
+      compression: 'DEFLATE',
+    });
+    const name = `${rootName || 'upload'}.zip`;
+    return new File([blob], name, { type: 'application/zip' });
   };
 
   const buildCysteineExpression = useCallback(() => {
@@ -779,11 +873,18 @@ function AfEvaluate() {
 
   const availableColumns = baseColumns.filter((col) => results.some((row) => row[col] !== undefined));
   const resultColumns = [...availableColumns, 'bestRMSD', 'alignments'];
+  const selectedFolderName = selectedFolderFiles.length
+    ? getRootFolderName(selectedFolderFiles) || 'Selected folder'
+    : '';
+  const folderFileCountWithoutMap = selectedFolderFiles.filter((file) => !isMapFile(file)).length;
 
-  const handleFileChange = (event) => {
+  const handleArchiveChange = (event) => {
     const file = event.target.files?.[0];
     if (!file) {
-      setSelectedFile(null);
+      setSelectedArchive(null);
+      setSelectedFolderFiles([]);
+      setFolderHasMap(false);
+      setMapCodesText('');
       setError('');
       return;
     }
@@ -794,21 +895,66 @@ function AfEvaluate() {
 
     if (!isArchive) {
       setError('Unsupported file type. Please choose a single .tar/.tar.gz/.tgz/.zip archive.');
-      setSelectedFile(null);
+      setSelectedArchive(null);
       return;
     }
 
-    setSelectedFile(file);
+    setSelectedArchive(file);
+    setSelectedFolderFiles([]);
+    setFolderHasMap(false);
+    setMapCodesText('');
+  };
+
+  const handleFolderChange = (event) => {
+    const files = Array.from(event.target.files || []);
+    if (!files.length) {
+      setSelectedFolderFiles([]);
+      setFolderHasMap(false);
+      setSelectedArchive(null);
+      setMapCodesText('');
+      setError('');
+      return;
+    }
+
+    setError('');
+    setSelectedArchive(null);
+    setSelectedFolderFiles(files);
+    const hasMap = files.some(isMapFile);
+    setFolderHasMap(hasMap);
+    if (hasMap) {
+      setMapCodesText('');
+    }
   };
 
   const openFilePicker = () => {
     fileInputRef.current?.click();
   };
 
+  const openFolderPicker = () => {
+    folderInputRef.current?.click();
+  };
+
+  const prepareUploadFile = async () => {
+    if (selectedArchive) return selectedArchive;
+
+    if (selectedFolderFiles.length) {
+      const existingMap = selectedFolderFiles.find(isMapFile) || null;
+      let mapFileToUse = existingMap;
+
+      if (!existingMap) {
+        mapFileToUse = buildMapFileFromCodes(selectedFolderFiles, mapCodesText);
+      }
+
+      return zipFolderWithMap(selectedFolderFiles, mapFileToUse);
+    }
+
+    return null;
+  };
+
   const submitJob = async (event) => {
     event.preventDefault();
-    if (!selectedFile) {
-      setError('Please choose one file before submitting.');
+    if (!selectedArchive && !selectedFolderFiles.length) {
+      setError('Please choose an archive or folder before submitting.');
       return;
     }
 
@@ -824,8 +970,20 @@ function AfEvaluate() {
     setIsSubmitting(true);
     setError('');
 
+    let uploadFile;
+    try {
+      uploadFile = await prepareUploadFile();
+      if (!uploadFile) {
+        throw new Error('No upload data found. Please re-select your file or folder.');
+      }
+    } catch (err) {
+      setIsSubmitting(false);
+      setError(err.message || 'Could not prepare the upload payload.');
+      return;
+    }
+
     const formData = new FormData();
-    formData.append('file', selectedFile);
+    formData.append('file', uploadFile, uploadFile.name);
 
     try {
       const response = await fetch(SUBMIT_ENDPOINT, {
@@ -912,8 +1070,8 @@ function AfEvaluate() {
           <p className="af-kicker">AlphaFold evaluation</p>
           <h1>AF Evaluate</h1>
           <p className="af-subtitle">
-            Upload a single compressed archive (.tar/.tar.gz/.tgz/.zip) for backend evaluation. The viewer shows a sample
-            structure by default.
+            Upload a compressed archive (.tar/.tar.gz/.tgz/.zip) or an uncompressed folder. If map.txt is missing, enter
+            UniProt codes and we will build it before sending your data. The viewer shows a sample structure by default.
           </p>
         </div>
         <div className="af-status-card">
@@ -934,11 +1092,14 @@ function AfEvaluate() {
           </div>
           <form className="af-form" onSubmit={submitJob}>
             <label className="af-label" htmlFor="af-file-input">
-              Input archive
+              Input archive or folder
             </label>
             <div className="af-file-actions">
               <button type="button" className="af-file-btn" onClick={openFilePicker}>
                 Select archive (.tar/.tar.gz/.tgz/.zip)
+              </button>
+              <button type="button" className="af-file-btn" onClick={openFolderPicker}>
+                Select folder (uncompressed)
               </button>
             </div>
             <input
@@ -946,16 +1107,58 @@ function AfEvaluate() {
               ref={fileInputRef}
               type="file"
               accept=".tar,.tar.gz,.tgz,.zip"
-              onChange={handleFileChange}
+              onChange={handleArchiveChange}
+              className="af-file-input-hidden"
+            />
+            <input
+              id="af-folder-input"
+              ref={folderInputRef}
+              type="file"
+              multiple
+              webkitdirectory="true"
+              onChange={handleFolderChange}
               className="af-file-input-hidden"
             />
             <p className="af-helper-text">
-              Upload exactly one archive (.tar/.tar.gz/.tgz/.zip). It will be sent to the backend as the `file` parameter.
+              Upload exactly one archive or pick a folder. If map.txt is missing, provide UniProt codes and we will add the
+              file before sending to the backend.
             </p>
-            {selectedFile && (
+            {selectedArchive && (
               <ul className="af-file-list">
-                <li>{selectedFile.name}</li>
+                <li>{selectedArchive.name}</li>
               </ul>
+            )}
+            {selectedFolderFiles.length > 0 && (
+              <div className="af-folder-summary">
+                <ul className="af-file-list">
+                  <li>
+                    {selectedFolderName} ({selectedFolderFiles.length} file
+                    {selectedFolderFiles.length !== 1 ? 's' : ''}){' '}
+                    {folderHasMap ? '• map.txt found' : '• map.txt will be created'}
+                  </li>
+                </ul>
+                {!folderHasMap && (
+                  <>
+                    <label className="af-label" htmlFor="af-map-codes">
+                      UniProt codes for map.txt
+                    </label>
+                    <textarea
+                      id="af-map-codes"
+                      className="af-text-input"
+                      rows={4}
+                      value={mapCodesText}
+                      onChange={(e) => setMapCodesText(e.target.value)}
+                      placeholder="One UniProt code per line"
+                    />
+                    <p className="af-helper-text">
+                      Enter one code to apply to all files
+                      {folderFileCountWithoutMap > 1
+                        ? ` or provide ${folderFileCountWithoutMap} codes (one per file).`
+                        : '.'}
+                    </p>
+                  </>
+                )}
+              </div>
             )}
             <button className="af-submit-btn" type="submit" disabled={isSubmitting}>
               {isSubmitting ? 'Submitting...' : 'Upload & Start'}
@@ -985,7 +1188,9 @@ function AfEvaluate() {
           <div className="af-viewer">
             <div ref={viewerContainerRef} className="af-viewer-embed" />
           </div>
-          <p className="af-helper-text">Select a single archive to send to the backend. The viewer shows a sample structure.</p>
+          <p className="af-helper-text">
+            Select an archive or folder to send to the backend. The viewer shows a sample structure.
+          </p>
         </div>
 
         <div className="af-panel af-panel-results">
