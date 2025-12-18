@@ -98,6 +98,37 @@
   overflow: hidden;
 }
 
+.af-cysteine-legend {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  font-size: 13px;
+  color: #3b566f;
+  margin: 6px 0 12px;
+}
+
+.af-cysteine-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.af-cysteine-swatch {
+  width: 14px;
+  height: 12px;
+  border-radius: 4px;
+  border: 1px solid #c7d8e8;
+  display: inline-block;
+}
+
+.af-cysteine-swatch-model {
+  background: #e24a4a;
+}
+
+.af-cysteine-swatch-pdb {
+  background: #2f6fff;
+}
+
 .af-viewer-embed {
   width: 100%;
   height: 100%;
@@ -113,6 +144,74 @@
   color: #597189;
   font-size: 14px;
   margin-top: 10px;
+}
+
+.af-results-nav {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.af-results-table-wrapper {
+  overflow-x: auto;
+  margin-top: 10px;
+}
+
+.af-results-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 13px;
+}
+
+.af-results-table th,
+.af-results-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid #e2eaf3;
+  border-right: 1px solid #edf2f8;
+  text-align: left;
+  vertical-align: top;
+}
+
+.af-results-table th:last-child,
+.af-results-table td:last-child {
+  border-right: none;
+}
+
+.af-results-table thead th {
+  background: #f0f6fc;
+  color: #0a3a63;
+  font-weight: 700;
+}
+
+.af-results-table tbody tr:hover {
+  background: #f7faff;
+}
+
+.af-alignment-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.af-alignment-btn {
+  border: 1px solid #d4d7dd;
+  border-radius: 10px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #0a3a63;
+  cursor: pointer;
+}
+
+.af-alignment-meta {
+  color: #5a6f85;
+  font-size: 12px;
 }
 
 .af-matrix-section {
@@ -237,12 +336,6 @@
 .af-matrix-cell-diag {
   background: #f5f7fa;
   color: #7b8fa4;
-}
-
-.af-disulfide-info {
-  margin-top: 10px;
-  font-size: 13px;
-  color: #5a4a00;
 }
 
 .af-form {

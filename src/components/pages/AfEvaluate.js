@@ -1,6 +1,10 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Viewer } from 'molstar/lib/apps/viewer/app';
 import { Color } from 'molstar/lib/mol-util/color';
+import { MolScriptBuilder as MS } from 'molstar/lib/mol-script/language/builder';
+import { StructureSelection } from 'molstar/lib/mol-model/structure';
+import { StructureSelectionQueries } from 'molstar/lib/mol-plugin-state/helpers/structure-selection-query';
+import { setStructureTransparency } from 'molstar/lib/mol-plugin-state/helpers/structure-transparency';
 import 'molstar/build/viewer/molstar.css';
 import './AfEvaluate.css';
 
@@ -9,6 +13,8 @@ const SUBMIT_ENDPOINT = `${BASE_URL}/af_evaluate`;
 const STATUS_ENDPOINT = `${BASE_URL}/af_evaluate/status`;
 const POLL_INTERVAL_MS = 5000;
 const SAMPLE_PDB_URL = 'https://files.rcsb.org/download/1CRN.pdb';
+const CYS_MODEL_COLOR = Color(0xe24a4a);
+const CYS_PDB_COLOR = Color(0x2f6fff);
 
 function AfEvaluate() {
   const viewerContainerRef = useRef(null);
@@ -35,7 +41,6 @@ function AfEvaluate() {
   const [selectedAlignmentIndex, setSelectedAlignmentIndex] = useState(null);
   const [jobIdInput, setJobIdInput] = useState('');
   const [isDownloading, setIsDownloading] = useState(false);
-  const [disulfideInfo, setDisulfideInfo] = useState({ model: null, reference: null });
 
   const stopPolling = () => {
     if (pollerRef.current) {
@@ -78,6 +83,23 @@ function AfEvaluate() {
     return viewerRef.current;
   }, []);
 
+  const hideWaters = useCallback(async (viewer) => {
+    if (!viewer) return;
+    const structures = viewer.plugin?.managers?.structure?.hierarchy?.current?.structures || [];
+    if (!structures.length) return;
+
+    await viewer.plugin.dataTransaction(async (ctx) => {
+      const getLoci = async (structure) => {
+        const selection = await StructureSelectionQueries.water.getSelection(viewer.plugin, ctx, structure);
+        return StructureSelection.toLociWithSourceUnits(selection);
+      };
+
+      for (const structureRef of structures) {
+        await setStructureTransparency(viewer.plugin, structureRef.components, 1, getLoci);
+      }
+    }, { canUndo: 'Hide Water' });
+  }, []);
+
   const loadStructurePreview = useCallback(
     async (preview) => {
       const viewer = await ensureViewer();
@@ -100,12 +122,13 @@ function AfEvaluate() {
             label: 'Sample (1CRN)',
           });
         }
+        await hideWaters(viewer);
       } catch (err) {
         console.error('Mol* load failed', err);
         setError('Could not load structure into the viewer.');
       }
     },
-    [ensureViewer]
+    [ensureViewer, hideWaters]
   );
 
   useEffect(() => {
@@ -117,10 +140,15 @@ function AfEvaluate() {
     return String(value).toLowerCase();
   }, []);
 
-  const countDisulfideBonds = useCallback((data) => {
-    if (!data || typeof data !== 'string') return null;
-    const matches = data.match(/^SSBOND\b.*$/gm);
-    return matches ? matches.length : 0;
+  const buildCysteineExpression = useCallback(() => {
+    const residueTest = MS.core.logic.or([
+      MS.core.rel.eq([MS.struct.atomProperty.macromolecular.label_comp_id(), 'CYS']),
+      MS.core.rel.eq([MS.struct.atomProperty.macromolecular.auth_comp_id(), 'CYS']),
+    ]);
+    return MS.struct.generator.atomGroups({
+      'entity-test': MS.core.rel.eq([MS.struct.atomProperty.macromolecular.entityType(), 'polymer']),
+      'residue-test': residueTest,
+    });
   }, []);
 
   const getAlignmentsFromResult = useCallback((result) => {
@@ -142,6 +170,23 @@ function AfEvaluate() {
 
     return alignments;
   }, []);
+
+  const getBestRmsd = useCallback(
+    (result) => {
+      const alignments = getAlignmentsFromResult(result);
+      let best = null;
+      alignments.forEach((alignment) => {
+        const value = alignment?.rmsd;
+        const numeric = typeof value === 'number' ? value : Number(value);
+        if (!Number.isFinite(numeric)) return;
+        if (best === null || numeric < best) {
+          best = numeric;
+        }
+      });
+      return best;
+    },
+    [getAlignmentsFromResult]
+  );
 
   const getModelLabel = useCallback((result) => {
     if (!result) return 'Model';
@@ -354,30 +399,58 @@ function AfEvaluate() {
     }
   }, []);
 
-  const addDisulfideRepresentation = useCallback(async (viewer) => {
+  const addCysteineRepresentation = useCallback(async (viewer, { color, label } = {}) => {
+    if (!viewer || !color) return;
     const structures = viewer?.plugin?.managers?.structure?.hierarchy?.current?.structures || [];
     if (!structures.length) return;
     const target = structures[structures.length - 1];
     if (!target?.cell) return;
 
     try {
-      await viewer.plugin.builders.structure.representation.addRepresentation(
+      const expression = buildCysteineExpression();
+      const componentLabel = label ? `cys-${label}` : 'cys';
+      const component = await viewer.plugin.builders.structure.tryCreateComponentFromExpression(
         target.cell,
+        expression,
+        componentLabel
+      );
+
+      if (!component?.cell) return;
+
+      await viewer.plugin.builders.structure.representation.addRepresentation(
+        component.cell,
         {
-          type: 'line',
+          type: 'ball-and-stick',
           typeParams: {
-            includeTypes: ['disulfide'],
-            sizeFactor: 0.35,
+            visuals: ['intra-bond', 'inter-bond'],
+            sizeFactor: 0.5,
           },
           color: 'uniform',
-          colorParams: { value: Color(0xffd84d) },
+          colorParams: { value: color },
         },
-        { tag: 'disulfide-bonds' }
+        { tag: componentLabel }
+      );
+
+      await viewer.plugin.builders.structure.representation.addRepresentation(
+        component.cell,
+        {
+          type: 'label',
+          typeParams: {
+            level: 'residue',
+            residueScale: 1.2,
+            background: true,
+            backgroundColor: Color(0x0d1520),
+            backgroundOpacity: 0.6,
+          },
+          color: 'uniform',
+          colorParams: { value: color },
+        },
+        { tag: `${componentLabel}-labels` }
       );
     } catch (err) {
-      console.warn('Mol* disulfide highlight failed', err);
+      console.warn('Mol* cysteine highlight failed', err);
     }
-  }, []);
+  }, [buildCysteineExpression]);
 
   const getAlignmentsWithAssets = useCallback(
     (result, assetsOverride) => {
@@ -404,19 +477,17 @@ function AfEvaluate() {
       if (!viewer) return;
 
       try {
-        setDisulfideInfo({ model: null, reference: null });
         if (typeof viewer.clear === 'function') {
           await viewer.clear();
         } else if (viewer.plugin?.clear) {
           viewer.plugin.clear();
         }
 
-        const updateDisulfideInfo = (key, count) => {
-          if (!key) return;
-          setDisulfideInfo((prev) => ({ ...prev, [key]: count }));
-        };
-
-        const loadPdbWithLabel = async (url, label, { overrideEntryId, disulfideKey } = {}) => {
+        const loadPdbWithLabel = async (
+          url,
+          label,
+          { overrideEntryId, cysteineColor, cysteineLabel } = {}
+        ) => {
           if (!url) return;
           try {
             const response = await fetch(url);
@@ -427,13 +498,15 @@ function AfEvaluate() {
             if (overrideEntryId) {
               data = stripPdbHeaderIdCode(data);
             }
-            updateDisulfideInfo(disulfideKey, countDisulfideBonds(data));
             await viewer.loadStructureFromData(data, 'pdb', { dataLabel: label });
           } catch (err) {
-            updateDisulfideInfo(disulfideKey, null);
             await viewer.loadStructureFromUrl(url, 'pdb', false, { label });
           }
-          await addDisulfideRepresentation(viewer);
+          await addCysteineRepresentation(viewer, {
+            color: cysteineColor,
+            label: cysteineLabel,
+          });
+          await hideWaters(viewer);
         };
 
         const alignedModelAsset = alignment.assetUrl
@@ -446,11 +519,12 @@ function AfEvaluate() {
         if (modelAsset?.url) {
           await loadPdbWithLabel(modelAsset.url, modelLabel, {
             overrideEntryId: true,
-            disulfideKey: 'model',
+            cysteineColor: CYS_MODEL_COLOR,
+            cysteineLabel: 'model',
           });
         } else {
           await viewer.loadStructureFromUrl(SAMPLE_PDB_URL, 'pdb', false, { label: modelLabel });
-          await addDisulfideRepresentation(viewer);
+          await addCysteineRepresentation(viewer, { color: CYS_MODEL_COLOR, label: 'model' });
         }
         relabelLastStructure(viewer, modelLabel);
 
@@ -459,14 +533,15 @@ function AfEvaluate() {
         if (alignment.referenceUrl) {
           await loadPdbWithLabel(alignment.referenceUrl, referenceLabel, {
             overrideEntryId: true,
-            disulfideKey: 'reference',
+            cysteineColor: CYS_PDB_COLOR,
+            cysteineLabel: 'pdb',
           });
           relabelLastStructure(viewer, referenceLabel);
         } else if (alignment.pdbId) {
           await loadPdbWithLabel(
             `https://files.rcsb.org/download/${encodeURIComponent(alignment.pdbId)}.pdb`,
             referenceLabel,
-            { overrideEntryId: true, disulfideKey: 'reference' }
+            { overrideEntryId: true, cysteineColor: CYS_PDB_COLOR, cysteineLabel: 'pdb' }
           );
           relabelLastStructure(viewer, referenceLabel);
         }
@@ -481,8 +556,8 @@ function AfEvaluate() {
       findModelAsset,
       getModelLabel,
       getPdbLabel,
-      addDisulfideRepresentation,
-      countDisulfideBonds,
+      addCysteineRepresentation,
+      hideWaters,
       relabelLastStructure,
       stripPdbHeaderIdCode,
     ]
@@ -723,7 +798,7 @@ function AfEvaluate() {
   ];
 
   const availableColumns = baseColumns.filter((col) => results.some((row) => row[col] !== undefined));
-  const resultColumns = [...availableColumns, 'alignments'];
+  const resultColumns = [...availableColumns, 'bestRMSD', 'alignments'];
 
   const handleFileChange = (event) => {
     const file = event.target.files?.[0];
@@ -921,6 +996,16 @@ function AfEvaluate() {
             </div>
             <span className="af-tag">PDB</span>
           </div>
+          <div className="af-cysteine-legend">
+            <span className="af-cysteine-legend-item">
+              <span className="af-cysteine-swatch af-cysteine-swatch-model" />
+              Model cysteines
+            </span>
+            <span className="af-cysteine-legend-item">
+              <span className="af-cysteine-swatch af-cysteine-swatch-pdb" />
+              PDB cysteines
+            </span>
+          </div>
           <div className="af-viewer">
             <div ref={viewerContainerRef} className="af-viewer-embed" />
           </div>
@@ -935,6 +1020,23 @@ function AfEvaluate() {
             </div>
             {jobId && <span className="af-tag">job: {jobId.length > 8 ? `${jobId.slice(0, 8)}...` : jobId}</span>}
           </div>
+
+          {results.length > 0 && (
+            <div className="af-results-nav">
+              <button type="button" className="af-file-btn" onClick={handlePrevResult} disabled={!canGoPrev}>
+                &lt; Prev PDB
+              </button>
+              <span className="af-status-meta">
+                {selectedResultIndex !== null
+                  ? `Result ${selectedResultIndex + 1} of ${results.length}`
+                  : `Result 0 of ${results.length}`}
+                {alignmentCount ? ` | PDB ${alignmentPosition} of ${alignmentCount}` : ''}
+              </span>
+              <button type="button" className="af-file-btn" onClick={handleNextResult} disabled={!canGoNext}>
+                Next PDB &gt;
+              </button>
+            </div>
+          )}
 
           <div className="af-manual-controls">
             <label className="af-label" htmlFor="af-job-id-input">
@@ -981,21 +1083,6 @@ function AfEvaluate() {
 
           {results.length > 0 && (
             <>
-              <div className="af-results-nav">
-                <button type="button" className="af-file-btn" onClick={handlePrevResult} disabled={!canGoPrev}>
-                  &lt; Prev PDB
-                </button>
-                <span className="af-status-meta">
-                  {selectedResultIndex !== null
-                    ? `Result ${selectedResultIndex + 1} of ${results.length}`
-                    : `Result 0 of ${results.length}`}
-                  {alignmentCount ? ` | PDB ${alignmentPosition} of ${alignmentCount}` : ''}
-                </span>
-                <button type="button" className="af-file-btn" onClick={handleNextResult} disabled={!canGoNext}>
-                  Next PDB &gt;
-                </button>
-              </div>
-
               <div className="af-results-table-wrapper">
                 <table className="af-results-table">
                   <thead>
@@ -1019,6 +1106,8 @@ function AfEvaluate() {
                             <td key={`${col}-${rowIndex}`}>
                               {col === 'alignments'
                                 ? alignments.map((a) => a.pdbId).filter(Boolean).join(', ') || '-'
+                                : col === 'bestRMSD'
+                                ? formatMatrixValue(getBestRmsd(row))
                                 : row[col] ?? '-'}
                             </td>
                           ))}
@@ -1068,12 +1157,6 @@ function AfEvaluate() {
                   </div>
                 )}
 
-                {selectedAlignmentIndex !== null && (
-                  <p className="af-disulfide-info">
-                    Disulfide bonds (yellow): model {disulfideInfo.model ?? '-'}, reference{' '}
-                    {disulfideInfo.reference ?? '-'}
-                  </p>
-                )}
               </div>
 
               <div className="af-matrix-section">
