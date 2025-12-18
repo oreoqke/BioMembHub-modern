@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Viewer } from 'molstar/lib/apps/viewer/app';
+import { Color } from 'molstar/lib/mol-util/color';
 import 'molstar/build/viewer/molstar.css';
 import './AfEvaluate.css';
 
@@ -26,6 +27,7 @@ function AfEvaluate() {
 
   const [results, setResults] = useState([]);
   const [assetFiles, setAssetFiles] = useState([]);
+  const [modelAlignmentMatrices, setModelAlignmentMatrices] = useState([]);
   const [resultsError, setResultsError] = useState('');
   const [isFetchingResults, setIsFetchingResults] = useState(false);
   const [resultsJobId, setResultsJobId] = useState('');
@@ -33,6 +35,7 @@ function AfEvaluate() {
   const [selectedAlignmentIndex, setSelectedAlignmentIndex] = useState(null);
   const [jobIdInput, setJobIdInput] = useState('');
   const [isDownloading, setIsDownloading] = useState(false);
+  const [disulfideInfo, setDisulfideInfo] = useState({ model: null, reference: null });
 
   const stopPolling = () => {
     if (pollerRef.current) {
@@ -114,6 +117,12 @@ function AfEvaluate() {
     return String(value).toLowerCase();
   }, []);
 
+  const countDisulfideBonds = useCallback((data) => {
+    if (!data || typeof data !== 'string') return null;
+    const matches = data.match(/^SSBOND\b.*$/gm);
+    return matches ? matches.length : 0;
+  }, []);
+
   const getAlignmentsFromResult = useCallback((result) => {
     if (!result) return [];
 
@@ -159,6 +168,54 @@ function AfEvaluate() {
     const padded = headerLine.padEnd(66, ' ');
     const sanitized = `${padded.slice(0, 62)}    ${padded.slice(66)}`;
     return data.replace(headerLine, sanitized);
+  }, []);
+
+  const parseMatrixCsv = useCallback((csv) => {
+    if (!csv || typeof csv !== 'string') return null;
+    const lines = csv.trim().split(/\r?\n/).filter(Boolean);
+    if (lines.length < 2) return null;
+    const header = lines[0].split(',').map((entry) => entry.trim());
+    const labels = header.slice(1).map((label, index) => label || `model_${index + 1}`);
+    const rowLabels = [];
+    const matrix = lines.slice(1).map((line, rowIndex) => {
+      const cols = line.split(',').map((entry) => entry.trim());
+      rowLabels.push(cols[0] || labels[rowIndex] || `model_${rowIndex + 1}`);
+      return cols.slice(1).map((value) => {
+        if (value === '') return null;
+        const numeric = Number(value);
+        return Number.isFinite(numeric) ? numeric : value;
+      });
+    });
+    return { labels, rowLabels, matrix };
+  }, []);
+
+  const getMatrixData = useCallback(
+    (matrixEntry) => {
+      const csvData = parseMatrixCsv(matrixEntry?.csv);
+      const rawLabels = Array.isArray(matrixEntry?.labels) ? matrixEntry.labels : [];
+      const labels = rawLabels.length
+        ? rawLabels.map((label, index) => String(label || `model_${index + 1}`))
+        : csvData?.labels || [];
+      const rawMatrix = Array.isArray(matrixEntry?.matrix) ? matrixEntry.matrix : [];
+      const matrix = rawMatrix.length ? rawMatrix : csvData?.matrix || [];
+      const rowLabels =
+        csvData?.rowLabels && csvData.rowLabels.length === labels.length
+          ? csvData.rowLabels
+          : labels;
+      return { labels, rowLabels, matrix };
+    },
+    [parseMatrixCsv]
+  );
+
+  const formatMatrixValue = useCallback((value) => {
+    if (value === null || value === undefined) return '-';
+    const numeric = typeof value === 'number' ? value : Number(value);
+    if (Number.isFinite(numeric)) {
+      const rounded = Math.round(numeric * 100) / 100;
+      const text = rounded.toFixed(2).replace(/\.00$/, '').replace(/(\.\d)0$/, '$1');
+      return text;
+    }
+    return String(value);
   }, []);
 
   const findReferenceAsset = useCallback(
@@ -297,6 +354,31 @@ function AfEvaluate() {
     }
   }, []);
 
+  const addDisulfideRepresentation = useCallback(async (viewer) => {
+    const structures = viewer?.plugin?.managers?.structure?.hierarchy?.current?.structures || [];
+    if (!structures.length) return;
+    const target = structures[structures.length - 1];
+    if (!target?.cell) return;
+
+    try {
+      await viewer.plugin.builders.structure.representation.addRepresentation(
+        target.cell,
+        {
+          type: 'line',
+          typeParams: {
+            includeTypes: ['disulfide'],
+            sizeFactor: 0.35,
+          },
+          color: 'uniform',
+          colorParams: { value: Color(0xffd84d) },
+        },
+        { tag: 'disulfide-bonds' }
+      );
+    } catch (err) {
+      console.warn('Mol* disulfide highlight failed', err);
+    }
+  }, []);
+
   const getAlignmentsWithAssets = useCallback(
     (result, assetsOverride) => {
       const alignments = getAlignmentsFromResult(result);
@@ -322,13 +404,19 @@ function AfEvaluate() {
       if (!viewer) return;
 
       try {
+        setDisulfideInfo({ model: null, reference: null });
         if (typeof viewer.clear === 'function') {
           await viewer.clear();
         } else if (viewer.plugin?.clear) {
           viewer.plugin.clear();
         }
 
-        const loadPdbWithLabel = async (url, label, { overrideEntryId } = {}) => {
+        const updateDisulfideInfo = (key, count) => {
+          if (!key) return;
+          setDisulfideInfo((prev) => ({ ...prev, [key]: count }));
+        };
+
+        const loadPdbWithLabel = async (url, label, { overrideEntryId, disulfideKey } = {}) => {
           if (!url) return;
           try {
             const response = await fetch(url);
@@ -339,10 +427,13 @@ function AfEvaluate() {
             if (overrideEntryId) {
               data = stripPdbHeaderIdCode(data);
             }
+            updateDisulfideInfo(disulfideKey, countDisulfideBonds(data));
             await viewer.loadStructureFromData(data, 'pdb', { dataLabel: label });
           } catch (err) {
+            updateDisulfideInfo(disulfideKey, null);
             await viewer.loadStructureFromUrl(url, 'pdb', false, { label });
           }
+          await addDisulfideRepresentation(viewer);
         };
 
         const alignedModelAsset = alignment.assetUrl
@@ -353,23 +444,29 @@ function AfEvaluate() {
 
         // Always pass a label for URL loads (including fallback)
         if (modelAsset?.url) {
-          await loadPdbWithLabel(modelAsset.url, modelLabel, { overrideEntryId: true });
+          await loadPdbWithLabel(modelAsset.url, modelLabel, {
+            overrideEntryId: true,
+            disulfideKey: 'model',
+          });
         } else {
           await viewer.loadStructureFromUrl(SAMPLE_PDB_URL, 'pdb', false, { label: modelLabel });
+          await addDisulfideRepresentation(viewer);
         }
         relabelLastStructure(viewer, modelLabel);
 
         const referenceLabel = getPdbLabel(alignment);
 
         if (alignment.referenceUrl) {
-          await loadPdbWithLabel(alignment.referenceUrl, referenceLabel, { overrideEntryId: true });
+          await loadPdbWithLabel(alignment.referenceUrl, referenceLabel, {
+            overrideEntryId: true,
+            disulfideKey: 'reference',
+          });
           relabelLastStructure(viewer, referenceLabel);
         } else if (alignment.pdbId) {
-          await viewer.loadStructureFromUrl(
+          await loadPdbWithLabel(
             `https://files.rcsb.org/download/${encodeURIComponent(alignment.pdbId)}.pdb`,
-            'pdb',
-            false,
-            { label: referenceLabel }
+            referenceLabel,
+            { overrideEntryId: true, disulfideKey: 'reference' }
           );
           relabelLastStructure(viewer, referenceLabel);
         }
@@ -384,6 +481,8 @@ function AfEvaluate() {
       findModelAsset,
       getModelLabel,
       getPdbLabel,
+      addDisulfideRepresentation,
+      countDisulfideBonds,
       relabelLastStructure,
       stripPdbHeaderIdCode,
     ]
@@ -408,9 +507,13 @@ function AfEvaluate() {
         const data = await response.json();
         const parsedResults = Array.isArray(data.results) ? data.results : [];
         const parsedAssets = Array.isArray(data.asset_files) ? data.asset_files : [];
+        const parsedMatrices = Array.isArray(data.model_alignment_matrices)
+          ? data.model_alignment_matrices
+          : [];
 
         setResults(parsedResults);
         setAssetFiles(parsedAssets);
+        setModelAlignmentMatrices(parsedMatrices);
 
         if (parsedResults.length) {
           const firstAlignments = getAlignmentsWithAssets(parsedResults[0], parsedAssets);
@@ -498,6 +601,20 @@ function AfEvaluate() {
       setIsDownloading(false);
     }
   };
+
+  const downloadMatrixCsv = useCallback((group) => {
+    if (!group?.csv) return;
+    const blob = new Blob([group.csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    const safeName = String(group.parent_dir || 'matrix').replace(/[^a-z0-9._-]+/gi, '_');
+    link.href = url;
+    link.download = `${safeName}_matrix.csv`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  }, []);
 
   const selectAlignmentAt = useCallback(
     (resultIndex, alignmentIndex) => {
@@ -589,6 +706,9 @@ function AfEvaluate() {
   const alignmentPosition = selectedAlignmentIndex !== null ? selectedAlignmentIndex + 1 : 0;
   const canGoPrev = Boolean(findNextAlignmentTarget(-1));
   const canGoNext = Boolean(findNextAlignmentTarget(1));
+  const selectedParentDir = selectedResult?.parent_dir
+    ? normalizeValue(selectedResult.parent_dir)
+    : '';
 
   const baseColumns = [
     'parent_dir',
@@ -641,6 +761,7 @@ function AfEvaluate() {
 
     setResults([]);
     setAssetFiles([]);
+    setModelAlignmentMatrices([]);
     setResultsJobId('');
     setResultsError('');
     setSelectedResultIndex(null);
@@ -945,6 +1066,102 @@ function AfEvaluate() {
                       );
                     })}
                   </div>
+                )}
+
+                {selectedAlignmentIndex !== null && (
+                  <p className="af-disulfide-info">
+                    Disulfide bonds (yellow): model {disulfideInfo.model ?? '-'}, reference{' '}
+                    {disulfideInfo.reference ?? '-'}
+                  </p>
+                )}
+              </div>
+
+              <div className="af-matrix-section">
+                <p className="af-label">Model alignment matrices</p>
+                {modelAlignmentMatrices.length > 0 ? (
+                  <>
+                    <div className="af-matrix-legend">
+                      <span className="af-matrix-legend-item">
+                        <span className="af-matrix-legend-swatch af-matrix-legend-upper" />
+                        Upper triangle: RMSD
+                      </span>
+                      <span className="af-matrix-legend-item">
+                        <span className="af-matrix-legend-swatch af-matrix-legend-lower" />
+                        Lower triangle: overlap
+                      </span>
+                    </div>
+                    {modelAlignmentMatrices.map((group, groupIndex) => {
+                      const { labels, rowLabels, matrix } = getMatrixData(group);
+                      const groupKey = group?.parent_dir || `matrix-${groupIndex}`;
+                      const isActive =
+                        selectedParentDir && normalizeValue(group?.parent_dir) === selectedParentDir;
+
+                      return (
+                        <div
+                          key={groupKey}
+                          className={`af-matrix-group${isActive ? ' is-active' : ''}`}
+                        >
+                          <div className="af-matrix-header">
+                            <p className="af-matrix-title">{group?.parent_dir || 'Models'}</p>
+                            {group?.csv && (
+                              <button
+                                type="button"
+                                className="af-file-btn af-matrix-btn"
+                                onClick={() => downloadMatrixCsv(group)}
+                              >
+                                Download CSV
+                              </button>
+                            )}
+                          </div>
+                          <div className="af-matrix-wrapper">
+                            <table className="af-matrix-table">
+                              <thead>
+                                <tr>
+                                  <th scope="col" />
+                                  {labels.map((label, labelIndex) => (
+                                    <th scope="col" key={`${groupKey}-col-${labelIndex}`}>
+                                      {label}
+                                    </th>
+                                  ))}
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {labels.map((_, rowIndex) => {
+                                  const rowLabel = rowLabels[rowIndex] || labels[rowIndex] || `model_${rowIndex + 1}`;
+                                  const row = Array.isArray(matrix[rowIndex]) ? matrix[rowIndex] : [];
+                                  return (
+                                    <tr key={`${groupKey}-row-${rowIndex}`}>
+                                      <th scope="row">{rowLabel}</th>
+                                      {labels.map((_, colIndex) => {
+                                        const value = row[colIndex];
+                                        const isDiagonal = rowIndex === colIndex;
+                                        const cellType = isDiagonal
+                                          ? 'diag'
+                                          : rowIndex < colIndex
+                                          ? 'upper'
+                                          : 'lower';
+                                        const cellValue = isDiagonal ? '-' : formatMatrixValue(value);
+                                        return (
+                                          <td
+                                            key={`${groupKey}-cell-${rowIndex}-${colIndex}`}
+                                            className={`af-matrix-cell af-matrix-cell-${cellType}`}
+                                          >
+                                            {cellValue}
+                                          </td>
+                                        );
+                                      })}
+                                    </tr>
+                                  );
+                                })}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </>
+                ) : (
+                  <p className="af-helper-text">No model alignment matrices returned for this job.</p>
                 )}
               </div>
             </>

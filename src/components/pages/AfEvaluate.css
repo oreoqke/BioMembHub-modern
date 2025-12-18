@@ -115,6 +115,136 @@
   margin-top: 10px;
 }
 
+.af-matrix-section {
+  margin-top: 24px;
+}
+
+.af-matrix-legend {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  font-size: 13px;
+  color: #3b566f;
+  margin-top: 8px;
+}
+
+.af-matrix-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.af-matrix-legend-swatch {
+  width: 16px;
+  height: 12px;
+  border-radius: 4px;
+  border: 1px solid #c7d8e8;
+  display: inline-block;
+}
+
+.af-matrix-legend-upper {
+  background: #e4f1ff;
+}
+
+.af-matrix-legend-lower {
+  background: #e6f5ee;
+}
+
+.af-matrix-group {
+  margin-top: 16px;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #e3ebf4;
+  background: #fbfdff;
+}
+
+.af-matrix-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.af-matrix-group.is-active {
+  border-color: #8fb0d8;
+  box-shadow: inset 0 0 0 1px #d5e3f5;
+}
+
+.af-matrix-title {
+  font-weight: 700;
+  color: #103355;
+  margin-bottom: 0;
+}
+
+.af-matrix-btn {
+  border-style: solid;
+  padding: 8px 10px;
+  font-size: 12px;
+}
+
+.af-matrix-wrapper {
+  overflow-x: auto;
+}
+
+.af-matrix-table {
+  width: max-content;
+  border-collapse: collapse;
+  font-size: 13px;
+  table-layout: fixed;
+}
+
+.af-matrix-table th,
+.af-matrix-table td {
+  padding: 6px;
+  border-bottom: 1px solid #e2eaf3;
+  text-align: center;
+  white-space: normal;
+  word-break: break-word;
+  hyphens: auto;
+  width: 7ch;
+  max-width: 7ch;
+}
+
+.af-matrix-table thead th {
+  background: #f0f6fc;
+  color: #0a3a63;
+  font-weight: 700;
+}
+
+.af-matrix-table tbody th {
+  background: #f7fafc;
+  color: #0a3a63;
+  font-weight: 700;
+  text-align: left;
+}
+
+.af-matrix-cell {
+  font-variant-numeric: tabular-nums;
+}
+
+.af-matrix-cell-upper {
+  background: #e4f1ff;
+  color: #0a3a63;
+}
+
+.af-matrix-cell-lower {
+  background: #e6f5ee;
+  color: #0f5a3b;
+}
+
+.af-matrix-cell-diag {
+  background: #f5f7fa;
+  color: #7b8fa4;
+}
+
+.af-disulfide-info {
+  margin-top: 10px;
+  font-size: 13px;
+  color: #5a4a00;
+}
+
 .af-form {
   display: flex;
   flex-direction: column;
