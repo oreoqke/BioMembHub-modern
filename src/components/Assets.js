@@ -31,6 +31,7 @@ const imagePaths = {
     nsf: "images/NSF_logo.jpg",
     fmap: "images/Logo_FMAP_server.jpg",
     lehigh_university: "images/Lehigh_University.jpg",
+    coffee: "images/Coffee-logo-design.webp",
 };
 
 const teamPaths = {

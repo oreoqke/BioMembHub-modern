@@ -81,6 +81,20 @@ function Cards() {
               path={Webservers.CELLPM}
             />
           </ul>
+          <ul className='cards__items'>
+            <CardItem
+              src={Assets.images.coffee}
+              text='AlphaFold Evaluation Tool'
+              label='Tool'
+              path={Webservers.AF_EVALUATE}
+            />
+            <CardItem
+              src={Assets.images.coffee}
+              text='AlphaFold3 JSON Viewer'
+              label='Tool'
+              path={Webservers.AF3_JSON}
+            />
+          </ul>
         </div>
       </div>
     </div>

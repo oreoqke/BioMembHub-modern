@@ -124,12 +124,41 @@ function WebserversPage() {
                         <a href={Webservers.CELLPM}><h3> CellPM </h3></a>
                         <p className="database-text" style={{ fontSize: fontSize }}>
                             The CellPM web server is a physics-based computational tool designed to analyze peptide-
-                            membrane interactions and predict a peptide’s ability to traverse a lipid bilayer via passive
+                            membrane interactions and predict a peptide's ability to traverse a lipid bilayer via passive
                             diffusion. User can input an amino acid sequence or a predefined 3D structure of a specified
                             peptide to calculate the lowest energy translocation pathway of the peptide across the lipid
                             bilayer and the permeability coefficient. This tool provides a physically realistic depiction of the
                             transmembrane translocation, including changes in the orientation of the peptide as it moves
                             through the membrane.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="database-item">
+                    <img src={Assets.images.coffee} alt="Tool" loading="lazy" class="database-img"/>
+                    <div>
+                        <a href={Webservers.AF_EVALUATE}><h3> AF Evaluate (AlphaFold Evaluation Tool) </h3></a>
+                        <p className="database-text" style={{ fontSize: fontSize }}>
+                            The AlphaFold Evaluation Tool enables comprehensive evaluation and visualization of AlphaFold
+                            predicted protein structures. Upload compressed archives (.tar/.tar.gz/.tgz/.zip) for backend
+                            evaluation and explore 3D structures with the Mol* viewer. The tool provides detailed metrics
+                            including pLDDT scores, pTM/ipTM values, secondary structure analysis, and alignment
+                            comparisons with reference PDB structures, featuring interactive cysteine residue highlighting
+                            and model-to-PDB alignment visualization.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="database-item">
+                    <img src={Assets.images.coffee} alt="Tool" loading="lazy" class="database-img"/>
+                    <div>
+                        <a href={Webservers.AF3_JSON}><h3> AlphaFold3 JSON Viewer </h3></a>
+                        <p className="database-text" style={{ fontSize: fontSize }}>
+                            The AlphaFold3 JSON Viewer provides interactive visualization and analysis of AlphaFold3
+                            prediction results in JSON format. This tool allows researchers to explore structural predictions,
+                            confidence scores, and molecular features from AlphaFold3 outputs in an intuitive web-based
+                            interface, facilitating interpretation and comparison of predicted protein structures and
+                            complexes.
                         </p>
                     </div>
                 </div>

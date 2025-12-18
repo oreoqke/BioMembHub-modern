@@ -21,6 +21,8 @@ export const Webservers = {
     TMnet: "https://membranome.org/1tmnet",
     PERMM: "https://permm.phar.umich.edu/permm_server_cgopm",
     CELLPM: "https://cellpm.org/",
+    AF_EVALUATE: "/af_evaluate",
+    AF3_JSON: "https://biomembhub.org/af3_json/",
 }
 
 export const Links = {

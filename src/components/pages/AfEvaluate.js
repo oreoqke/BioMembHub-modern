@@ -15,6 +15,7 @@ const POLL_INTERVAL_MS = 5000;
 const SAMPLE_PDB_URL = 'https://files.rcsb.org/download/1CRN.pdb';
 const CYS_MODEL_COLOR = Color(0xe24a4a);
 const CYS_PDB_COLOR = Color(0x2f6fff);
+const FINISHED_STATES = ['complete', 'completed', 'done', 'finished', 'failed', 'error'];
 
 function AfEvaluate() {
   const viewerContainerRef = useRef(null);
@@ -60,6 +61,20 @@ function AfEvaluate() {
     []
   );
 
+  const clearViewer = useCallback(async (viewer) => {
+    if (!viewer) return;
+    if (typeof viewer.clear === 'function') {
+      await viewer.clear();
+    } else if (viewer.plugin?.clear) {
+      viewer.plugin.clear();
+    }
+  }, []);
+
+  const getErrorMessage = useCallback(async (response, fallback) => {
+    const errText = (await response.text()) || response.statusText;
+    return errText || fallback;
+  }, []);
+
   const ensureViewer = useCallback(async () => {
     if (viewerRef.current) return viewerRef.current;
     if (!viewerContainerRef.current) return null;
@@ -104,11 +119,7 @@ function AfEvaluate() {
       const viewer = await ensureViewer();
       if (!viewer) return;
 
-      if (typeof viewer.clear === 'function') {
-        await viewer.clear();
-      } else if (viewer.plugin?.clear) {
-        viewer.plugin.clear();
-      }
+      await clearViewer(viewer);
 
       try {
         await viewer.loadStructureFromUrl(SAMPLE_PDB_URL, 'pdb', false, {
@@ -122,12 +133,12 @@ function AfEvaluate() {
     };
 
     loadSample();
-  }, [ensureViewer, hideWaters]);
+  }, [ensureViewer, clearViewer, hideWaters]);
 
-  const normalizeValue = useCallback((value) => {
+  const normalizeValue = (value) => {
     if (value === null || value === undefined) return '';
     return String(value).toLowerCase();
-  }, []);
+  };
 
   const buildCysteineExpression = useCallback(() => {
     const residueTest = MS.core.logic.or([
@@ -177,24 +188,24 @@ function AfEvaluate() {
     [getAlignmentsFromResult]
   );
 
-  const getModelLabel = useCallback((result) => {
+  const getModelLabel = (result) => {
     if (!result) return 'Model';
     const parent = result.parent_dir ? String(result.parent_dir).trim() : '';
     const modelNumber = result.model_number ? String(result.model_number).trim() : '';
     if (parent) return parent;
     if (modelNumber) return `Model ${modelNumber}`;
     return 'Model';
-  }, []);
+  };
 
-  const getPdbLabel = useCallback((alignment) => {
+  const getPdbLabel = (alignment) => {
     if (!alignment) return 'PDB';
     const pdbId = alignment.pdbId ? String(alignment.pdbId).trim() : '';
     if (pdbId) return pdbId;
     const fallback = alignment.referenceName ? String(alignment.referenceName).trim() : '';
     return fallback || 'PDB';
-  }, []);
+  };
 
-  const stripPdbHeaderIdCode = useCallback((data) => {
+  const stripPdbHeaderIdCode = (data) => {
     if (!data || typeof data !== 'string') return data;
     const match = data.match(/^HEADER.*$/m);
     if (!match) return data;
@@ -202,9 +213,9 @@ function AfEvaluate() {
     const padded = headerLine.padEnd(66, ' ');
     const sanitized = `${padded.slice(0, 62)}    ${padded.slice(66)}`;
     return data.replace(headerLine, sanitized);
-  }, []);
+  };
 
-  const parseMatrixCsv = useCallback((csv) => {
+  const parseMatrixCsv = (csv) => {
     if (!csv || typeof csv !== 'string') return null;
     const lines = csv.trim().split(/\r?\n/).filter(Boolean);
     if (lines.length < 2) return null;
@@ -221,27 +232,24 @@ function AfEvaluate() {
       });
     });
     return { labels, rowLabels, matrix };
-  }, []);
+  };
 
-  const getMatrixData = useCallback(
-    (matrixEntry) => {
-      const csvData = parseMatrixCsv(matrixEntry?.csv);
-      const rawLabels = Array.isArray(matrixEntry?.labels) ? matrixEntry.labels : [];
-      const labels = rawLabels.length
-        ? rawLabels.map((label, index) => String(label || `model_${index + 1}`))
-        : csvData?.labels || [];
-      const rawMatrix = Array.isArray(matrixEntry?.matrix) ? matrixEntry.matrix : [];
-      const matrix = rawMatrix.length ? rawMatrix : csvData?.matrix || [];
-      const rowLabels =
-        csvData?.rowLabels && csvData.rowLabels.length === labels.length
-          ? csvData.rowLabels
-          : labels;
-      return { labels, rowLabels, matrix };
-    },
-    [parseMatrixCsv]
-  );
+  const getMatrixData = (matrixEntry) => {
+    const csvData = parseMatrixCsv(matrixEntry?.csv);
+    const rawLabels = Array.isArray(matrixEntry?.labels) ? matrixEntry.labels : [];
+    const labels = rawLabels.length
+      ? rawLabels.map((label, index) => String(label || `model_${index + 1}`))
+      : csvData?.labels || [];
+    const rawMatrix = Array.isArray(matrixEntry?.matrix) ? matrixEntry.matrix : [];
+    const matrix = rawMatrix.length ? rawMatrix : csvData?.matrix || [];
+    const rowLabels =
+      csvData?.rowLabels && csvData.rowLabels.length === labels.length
+        ? csvData.rowLabels
+        : labels;
+    return { labels, rowLabels, matrix };
+  };
 
-  const formatMatrixValue = useCallback((value) => {
+  const formatMatrixValue = (value) => {
     if (value === null || value === undefined) return '-';
     const numeric = typeof value === 'number' ? value : Number(value);
     if (Number.isFinite(numeric)) {
@@ -250,7 +258,7 @@ function AfEvaluate() {
       return text;
     }
     return String(value);
-  }, []);
+  };
 
   const findReferenceAsset = useCallback(
     (result, pdbId, assetsOverride) => {
@@ -362,7 +370,7 @@ function AfEvaluate() {
     [assetFiles, normalizeValue]
   );
 
-  const relabelLastStructure = useCallback((viewer, label) => {
+  const relabelLastStructure = (viewer, label) => {
     if (!viewer || !label) return;
     const entryLabel = String(label).trim();
     if (!entryLabel) return;
@@ -386,7 +394,7 @@ function AfEvaluate() {
     if (target?.cell?.obj) {
       target.cell.obj.label = entryLabel;
     }
-  }, []);
+  };
 
   const addCysteineRepresentation = useCallback(async (viewer, { color, label } = {}) => {
     if (!viewer || !color) return;
@@ -466,11 +474,7 @@ function AfEvaluate() {
       if (!viewer) return;
 
       try {
-        if (typeof viewer.clear === 'function') {
-          await viewer.clear();
-        } else if (viewer.plugin?.clear) {
-          viewer.plugin.clear();
-        }
+        await clearViewer(viewer);
 
         const loadPdbWithLabel = async (
           url,
@@ -539,17 +543,7 @@ function AfEvaluate() {
         setError('Could not load selected structure into the viewer.');
       }
     },
-    [
-      ensureViewer,
-      findAlignmentAsset,
-      findModelAsset,
-      getModelLabel,
-      getPdbLabel,
-      addCysteineRepresentation,
-      hideWaters,
-      relabelLastStructure,
-      stripPdbHeaderIdCode,
-    ]
+    [ensureViewer, clearViewer, findAlignmentAsset, findModelAsset, addCysteineRepresentation, hideWaters]
   );
 
   const fetchResults = useCallback(
@@ -564,8 +558,7 @@ function AfEvaluate() {
           `${BASE_URL}/af_evaluate/${encodeURIComponent(jobIdToFetch)}/results`
         );
         if (!response.ok) {
-          const errText = (await response.text()) || response.statusText;
-          throw new Error(errText || 'Could not fetch results.');
+          throw new Error(await getErrorMessage(response, 'Could not fetch results.'));
         }
 
         const data = await response.json();
@@ -596,7 +589,7 @@ function AfEvaluate() {
         setIsFetchingResults(false);
       }
     },
-    [getAlignmentsWithAssets, loadAlignmentStructure]
+    [getAlignmentsWithAssets, loadAlignmentStructure, getErrorMessage]
   );
 
   const fetchStatusOnce = useCallback(async (id) => {
@@ -604,8 +597,7 @@ function AfEvaluate() {
     try {
       const response = await fetch(`${STATUS_ENDPOINT}?job_id=${encodeURIComponent(id)}`);
       if (!response.ok) {
-        const errText = (await response.text()) || response.statusText;
-        throw new Error(errText || 'Could not fetch job status.');
+        throw new Error(await getErrorMessage(response, 'Could not fetch job status.'));
       }
       const data = await response.json();
       const statusFromApi = data.status || data.state || 'unknown';
@@ -617,7 +609,7 @@ function AfEvaluate() {
       );
       setLastCheckedAt(new Date().toLocaleTimeString());
     }
-  }, []);
+  }, [getErrorMessage]);
 
   const handleFetchExistingResults = async () => {
     const id = jobIdInput.trim();
@@ -647,8 +639,7 @@ function AfEvaluate() {
     try {
       const response = await fetch(`${BASE_URL}/af_evaluate/${encodeURIComponent(id)}/download`);
       if (!response.ok) {
-        const errText = (await response.text()) || response.statusText;
-        throw new Error(errText || 'Could not download results.');
+        throw new Error(await getErrorMessage(response, 'Could not download results.'));
       }
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
@@ -666,7 +657,7 @@ function AfEvaluate() {
     }
   };
 
-  const downloadMatrixCsv = useCallback((group) => {
+  const downloadMatrixCsv = (group) => {
     if (!group?.csv) return;
     const blob = new Blob([group.csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
@@ -678,7 +669,7 @@ function AfEvaluate() {
     link.click();
     link.remove();
     URL.revokeObjectURL(url);
-  }, []);
+  };
 
   const selectAlignmentAt = useCallback(
     (resultIndex, alignmentIndex) => {
@@ -881,8 +872,7 @@ function AfEvaluate() {
       try {
         const response = await fetch(`${STATUS_ENDPOINT}?job_id=${encodeURIComponent(id)}`);
         if (!response.ok) {
-          const errText = (await response.text()) || response.statusText;
-          throw new Error(errText || 'Status request failed.');
+          throw new Error(await getErrorMessage(response, 'Status request failed.'));
         }
 
         const data = await response.json();
@@ -891,7 +881,7 @@ function AfEvaluate() {
         setLastCheckedAt(new Date().toLocaleTimeString());
 
         const normalized = String(statusFromApi || '').toLowerCase();
-        if (['complete', 'completed', 'done', 'finished', 'failed', 'error'].includes(normalized)) {
+        if (FINISHED_STATES.includes(normalized)) {
           stopPolling();
         }
       } catch (err) {
@@ -910,8 +900,7 @@ function AfEvaluate() {
 
   useEffect(() => {
     const normalized = String(status || '').toLowerCase();
-    const finishedStates = ['complete', 'completed', 'done', 'finished'];
-    if (!jobId || !finishedStates.includes(normalized)) return;
+    if (!jobId || !FINISHED_STATES.slice(0, 4).includes(normalized)) return;
     if (resultsJobId === jobId || isFetchingResults) return;
     fetchResults(jobId);
   }, [status, jobId, resultsJobId, isFetchingResults, fetchResults]);
