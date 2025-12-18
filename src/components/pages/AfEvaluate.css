@@ -382,6 +382,24 @@
   flex-wrap: wrap;
 }
 
+.af-job-actions {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.af-text-input {
+  flex: 1;
+  min-width: 300px;
+  border: 1px solid #aac5df;
+  background: #f9fcff;
+  padding: 10px 12px;
+  border-radius: 10px;
+  color: #0a3a63;
+  font-size: 14px;
+}
+
 .af-file-btn {
   background: #f9fcff;
   border: 1px dashed #aac5df;

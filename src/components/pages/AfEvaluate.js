@@ -29,7 +29,6 @@ function AfEvaluate() {
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [lastCheckedAt, setLastCheckedAt] = useState('');
-  const [pdbFilePreview, setPdbFilePreview] = useState(null);
 
   const [results, setResults] = useState([]);
   const [assetFiles, setAssetFiles] = useState([]);
@@ -100,8 +99,8 @@ function AfEvaluate() {
     }, { canUndo: 'Hide Water' });
   }, []);
 
-  const loadStructurePreview = useCallback(
-    async (preview) => {
+  useEffect(() => {
+    const loadSample = async () => {
       const viewer = await ensureViewer();
       if (!viewer) return;
 
@@ -112,28 +111,18 @@ function AfEvaluate() {
       }
 
       try {
-        // NOTE: Mol* Viewer uses `dataLabel` (not `label`) for loadStructureFromData
-        if (preview?.filestring) {
-          await viewer.loadStructureFromData(preview.filestring, preview.type || 'pdb', {
-            dataLabel: preview.label || 'Uploaded PDB',
-          });
-        } else {
-          await viewer.loadStructureFromUrl(SAMPLE_PDB_URL, 'pdb', false, {
-            label: 'Sample (1CRN)',
-          });
-        }
+        await viewer.loadStructureFromUrl(SAMPLE_PDB_URL, 'pdb', false, {
+          label: 'Sample (1CRN)',
+        });
         await hideWaters(viewer);
       } catch (err) {
         console.error('Mol* load failed', err);
         setError('Could not load structure into the viewer.');
       }
-    },
-    [ensureViewer, hideWaters]
-  );
+    };
 
-  useEffect(() => {
-    loadStructurePreview(pdbFilePreview);
-  }, [loadStructurePreview, pdbFilePreview]);
+    loadSample();
+  }, [ensureViewer, hideWaters]);
 
   const normalizeValue = useCallback((value) => {
     if (value === null || value === undefined) return '';
@@ -805,12 +794,10 @@ function AfEvaluate() {
     if (!file) {
       setSelectedFile(null);
       setError('');
-      setPdbFilePreview(null);
       return;
     }
 
     setError('');
-    setPdbFilePreview(null);
 
     const isArchive = /\.(tar|tar\.gz|tgz|zip)$/i.test(file.name);
 
