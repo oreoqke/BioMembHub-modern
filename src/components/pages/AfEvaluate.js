@@ -23,13 +23,14 @@ function AfEvaluate() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [lastCheckedAt, setLastCheckedAt] = useState('');
   const [pdbFilePreview, setPdbFilePreview] = useState(null);
+
   const [results, setResults] = useState([]);
   const [assetFiles, setAssetFiles] = useState([]);
   const [resultsError, setResultsError] = useState('');
   const [isFetchingResults, setIsFetchingResults] = useState(false);
   const [resultsJobId, setResultsJobId] = useState('');
   const [selectedResultIndex, setSelectedResultIndex] = useState(null);
-  const [selectedAlignment, setSelectedAlignment] = useState(null);
+  const [selectedAlignmentIndex, setSelectedAlignmentIndex] = useState(null);
   const [jobIdInput, setJobIdInput] = useState('');
   const [isDownloading, setIsDownloading] = useState(false);
 
@@ -86,13 +87,15 @@ function AfEvaluate() {
       }
 
       try {
+        // NOTE: Mol* Viewer uses `dataLabel` (not `label`) for loadStructureFromData
         if (preview?.filestring) {
-          await viewer.loadStructureFromData(
-            preview.filestring,
-            preview.type || 'pdb'
-          );
+          await viewer.loadStructureFromData(preview.filestring, preview.type || 'pdb', {
+            dataLabel: preview.label || 'Uploaded PDB',
+          });
         } else {
-          await viewer.loadStructureFromUrl(SAMPLE_PDB_URL, 'pdb');
+          await viewer.loadStructureFromUrl(SAMPLE_PDB_URL, 'pdb', false, {
+            label: 'Sample (1CRN)',
+          });
         }
       } catch (err) {
         console.error('Mol* load failed', err);
@@ -131,6 +134,33 @@ function AfEvaluate() {
     return alignments;
   }, []);
 
+  const getModelLabel = useCallback((result) => {
+    if (!result) return 'Model';
+    const parent = result.parent_dir ? String(result.parent_dir).trim() : '';
+    const modelNumber = result.model_number ? String(result.model_number).trim() : '';
+    if (parent) return parent;
+    if (modelNumber) return `Model ${modelNumber}`;
+    return 'Model';
+  }, []);
+
+  const getPdbLabel = useCallback((alignment) => {
+    if (!alignment) return 'PDB';
+    const pdbId = alignment.pdbId ? String(alignment.pdbId).trim() : '';
+    if (pdbId) return pdbId;
+    const fallback = alignment.referenceName ? String(alignment.referenceName).trim() : '';
+    return fallback || 'PDB';
+  }, []);
+
+  const stripPdbHeaderIdCode = useCallback((data) => {
+    if (!data || typeof data !== 'string') return data;
+    const match = data.match(/^HEADER.*$/m);
+    if (!match) return data;
+    const headerLine = match[0];
+    const padded = headerLine.padEnd(66, ' ');
+    const sanitized = `${padded.slice(0, 62)}    ${padded.slice(66)}`;
+    return data.replace(headerLine, sanitized);
+  }, []);
+
   const findReferenceAsset = useCallback(
     (result, pdbId, assetsOverride) => {
       const assets = Array.isArray(assetsOverride) ? assetsOverride : assetFiles;
@@ -139,14 +169,21 @@ function AfEvaluate() {
       const parentDir = normalizeValue(result.parent_dir);
 
       const matches = assets.filter((file) => {
-        const haystack = `${normalizeValue(file.name)} ${normalizeValue(file.path)} ${normalizeValue(file.url)}`;
-        if (!haystack.includes(target)) return false;
+        const name = normalizeValue(file.name);
+        const path = normalizeValue(file.path);
+        const url = normalizeValue(file.url);
+        const haystack = `${path} ${url}`;
+        if (name !== target) return false;
+        if (!haystack.includes('/results/')) return false;
         if (haystack.includes('alignments')) return false;
-        if (parentDir && !haystack.includes(parentDir)) return false;
+        if (parentDir && !haystack.includes(`/${parentDir}/`)) return false;
         return true;
       });
 
-      return matches[0] || null;
+      if (matches.length) return matches[0];
+
+      const fallback = assets.find((file) => normalizeValue(file.name) === target);
+      return fallback || null;
     },
     [assetFiles, normalizeValue]
   );
@@ -160,7 +197,9 @@ function AfEvaluate() {
       const modelNumber = normalizeValue(result.model_number);
 
       const candidates = assets.filter((file) => {
-        const haystack = `${normalizeValue(file.name)} ${normalizeValue(file.path)} ${normalizeValue(file.url)}`;
+        const haystack = `${normalizeValue(file.name)} ${normalizeValue(file.path)} ${normalizeValue(
+          file.url
+        )}`;
         if (!haystack.includes('.pdb')) return false;
         if (haystack.includes('alignments')) return false;
         if (haystack.includes('_vs_')) return false;
@@ -170,11 +209,14 @@ function AfEvaluate() {
       });
 
       if (!candidates.length) return null;
+
       if (modelNumber) {
         const modelToken = new RegExp(`model[_-]?${modelNumber}\\b`);
         const rankToken = new RegExp(`rank[_-]?0*${modelNumber}\\b`);
         const match = candidates.find((file) => {
-          const haystack = `${normalizeValue(file.name)} ${normalizeValue(file.path)} ${normalizeValue(file.url)}`;
+          const haystack = `${normalizeValue(file.name)} ${normalizeValue(file.path)} ${normalizeValue(
+            file.url
+          )}`;
           return modelToken.test(haystack) || rankToken.test(haystack);
         });
         if (match) return match;
@@ -208,32 +250,59 @@ function AfEvaluate() {
 
       if (!matches.length) return null;
 
+      const preferredMatches = matches.filter((file) => {
+        const haystack = `${normalizeValue(file.path)} ${normalizeValue(file.url)}`;
+        if (haystack.includes('alignments_top')) return false;
+        return haystack.includes('/alignments/');
+      });
+      const pool = preferredMatches.length ? preferredMatches : matches;
+
       const preferred = parentDir
-        ? matches.find((file) => {
-            const haystack = `${normalizeValue(file.name)} ${normalizeValue(file.path)} ${normalizeValue(file.url)}`;
+        ? pool.find((file) => {
+            const haystack = `${normalizeValue(file.name)} ${normalizeValue(file.path)} ${normalizeValue(
+              file.url
+            )}`;
             return haystack.includes(parentDir);
           })
         : null;
 
-      return preferred || matches[0];
+      return preferred || pool[0];
     },
     [assetFiles, normalizeValue]
   );
+
+  const relabelLastStructure = useCallback((viewer, label) => {
+    if (!viewer || !label) return;
+    const entryLabel = String(label).trim();
+    if (!entryLabel) return;
+
+    const structures = viewer.plugin?.managers?.structure?.hierarchy?.current?.structures || [];
+    if (!structures.length) return;
+
+    const target = structures[structures.length - 1];
+    const modelData = target?.model?.cell?.obj?.data;
+
+    if (modelData) {
+      modelData.entryId = entryLabel;
+      modelData.label = entryLabel;
+      modelData.entry = entryLabel;
+    }
+
+    if (target?.model?.cell?.obj) {
+      target.model.cell.obj.label = entryLabel;
+    }
+
+    if (target?.cell?.obj) {
+      target.cell.obj.label = entryLabel;
+    }
+  }, []);
 
   const getAlignmentsWithAssets = useCallback(
     (result, assetsOverride) => {
       const alignments = getAlignmentsFromResult(result);
       return alignments.map((alignment) => {
-        const asset = findAlignmentAsset(
-          result,
-          alignment.pdbId,
-          assetsOverride
-        );
-        const referenceAsset = findReferenceAsset(
-          result,
-          alignment.pdbId,
-          assetsOverride
-        );
+        const asset = findAlignmentAsset(result, alignment.pdbId, assetsOverride);
+        const referenceAsset = findReferenceAsset(result, alignment.pdbId, assetsOverride);
         return {
           ...alignment,
           assetUrl: asset?.url || '',
@@ -259,28 +328,65 @@ function AfEvaluate() {
           viewer.plugin.clear();
         }
 
-        const modelAsset = findModelAsset(result, assetsOverride);
-        if (modelAsset?.url) {
-          await viewer.loadStructureFromUrl(modelAsset.url, 'pdb');
-        } else {
-          await viewer.loadStructureFromUrl(SAMPLE_PDB_URL, 'pdb');
-        }
+        const loadPdbWithLabel = async (url, label, { overrideEntryId } = {}) => {
+          if (!url) return;
+          try {
+            const response = await fetch(url);
+            if (!response.ok) {
+              throw new Error(`Failed to fetch PDB (${response.status})`);
+            }
+            let data = await response.text();
+            if (overrideEntryId) {
+              data = stripPdbHeaderIdCode(data);
+            }
+            await viewer.loadStructureFromData(data, 'pdb', { dataLabel: label });
+          } catch (err) {
+            await viewer.loadStructureFromUrl(url, 'pdb', false, { label });
+          }
+        };
 
-        const referenceUrl = alignment.referenceUrl || alignment.assetUrl;
-        if (referenceUrl) {
-          await viewer.loadStructureFromUrl(referenceUrl, 'pdb');
+        const alignedModelAsset = alignment.assetUrl
+          ? { url: alignment.assetUrl, name: alignment.assetName }
+          : findAlignmentAsset(result, alignment.pdbId, assetsOverride);
+        const modelAsset = alignedModelAsset || findModelAsset(result, assetsOverride);
+        const modelLabel = getModelLabel(result);
+
+        // Always pass a label for URL loads (including fallback)
+        if (modelAsset?.url) {
+          await loadPdbWithLabel(modelAsset.url, modelLabel, { overrideEntryId: true });
+        } else {
+          await viewer.loadStructureFromUrl(SAMPLE_PDB_URL, 'pdb', false, { label: modelLabel });
+        }
+        relabelLastStructure(viewer, modelLabel);
+
+        const referenceLabel = getPdbLabel(alignment);
+
+        if (alignment.referenceUrl) {
+          await loadPdbWithLabel(alignment.referenceUrl, referenceLabel, { overrideEntryId: true });
+          relabelLastStructure(viewer, referenceLabel);
         } else if (alignment.pdbId) {
           await viewer.loadStructureFromUrl(
             `https://files.rcsb.org/download/${encodeURIComponent(alignment.pdbId)}.pdb`,
-            'pdb'
+            'pdb',
+            false,
+            { label: referenceLabel }
           );
+          relabelLastStructure(viewer, referenceLabel);
         }
       } catch (err) {
         console.error('Mol* load alignment failed', err);
         setError('Could not load selected structure into the viewer.');
       }
     },
-    [ensureViewer, findModelAsset]
+    [
+      ensureViewer,
+      findAlignmentAsset,
+      findModelAsset,
+      getModelLabel,
+      getPdbLabel,
+      relabelLastStructure,
+      stripPdbHeaderIdCode,
+    ]
   );
 
   const fetchResults = useCallback(
@@ -302,30 +408,23 @@ function AfEvaluate() {
         const data = await response.json();
         const parsedResults = Array.isArray(data.results) ? data.results : [];
         const parsedAssets = Array.isArray(data.asset_files) ? data.asset_files : [];
+
         setResults(parsedResults);
         setAssetFiles(parsedAssets);
+
         if (parsedResults.length) {
-          const firstAlignments = getAlignmentsWithAssets(
-            parsedResults[0],
-            parsedAssets
-          );
+          const firstAlignments = getAlignmentsWithAssets(parsedResults[0], parsedAssets);
           setSelectedResultIndex(0);
-          setSelectedAlignment(firstAlignments[0] || null);
+          setSelectedAlignmentIndex(firstAlignments.length ? 0 : null);
           if (firstAlignments[0]) {
-            loadAlignmentStructure(
-              firstAlignments[0],
-              parsedResults[0],
-              parsedAssets
-            );
+            loadAlignmentStructure(firstAlignments[0], parsedResults[0], parsedAssets);
           }
         } else {
           setSelectedResultIndex(null);
-          setSelectedAlignment(null);
+          setSelectedAlignmentIndex(null);
         }
       } catch (err) {
-        setResultsError(
-          err?.message || 'Could not load results for this job.'
-        );
+        setResultsError(err?.message || 'Could not load results for this job.');
       } finally {
         setIsFetchingResults(false);
       }
@@ -336,9 +435,7 @@ function AfEvaluate() {
   const fetchStatusOnce = useCallback(async (id) => {
     if (!id) return;
     try {
-      const response = await fetch(
-        `${STATUS_ENDPOINT}?job_id=${encodeURIComponent(id)}`
-      );
+      const response = await fetch(`${STATUS_ENDPOINT}?job_id=${encodeURIComponent(id)}`);
       if (!response.ok) {
         const errText = (await response.text()) || response.statusText;
         throw new Error(errText || 'Could not fetch job status.');
@@ -349,9 +446,7 @@ function AfEvaluate() {
       setLastCheckedAt(new Date().toLocaleTimeString());
     } catch (err) {
       setError(
-        err?.message
-          ? `Could not fetch job status: ${err.message}`
-          : 'Could not fetch job status.'
+        err?.message ? `Could not fetch job status: ${err.message}` : 'Could not fetch job status.'
       );
       setLastCheckedAt(new Date().toLocaleTimeString());
     }
@@ -383,9 +478,7 @@ function AfEvaluate() {
     setResultsError('');
     setIsDownloading(true);
     try {
-      const response = await fetch(
-        `${BASE_URL}/af_evaluate/${encodeURIComponent(id)}/download`
-      );
+      const response = await fetch(`${BASE_URL}/af_evaluate/${encodeURIComponent(id)}/download`);
       if (!response.ok) {
         const errText = (await response.text()) || response.statusText;
         throw new Error(errText || 'Could not download results.');
@@ -406,43 +499,96 @@ function AfEvaluate() {
     }
   };
 
+  const selectAlignmentAt = useCallback(
+    (resultIndex, alignmentIndex) => {
+      const result = results[resultIndex];
+      if (!result) return;
+      const alignments = getAlignmentsWithAssets(result);
+      if (!alignments.length) {
+        setSelectedResultIndex(resultIndex);
+        setSelectedAlignmentIndex(null);
+        return;
+      }
+      const safeIndex = Math.max(0, Math.min(alignmentIndex, alignments.length - 1));
+      const alignment = alignments[safeIndex];
+      setSelectedResultIndex(resultIndex);
+      setSelectedAlignmentIndex(safeIndex);
+      loadAlignmentStructure(alignment, result);
+    },
+    [results, getAlignmentsWithAssets, loadAlignmentStructure]
+  );
+
   const handleSelectResult = (index) => {
     if (!results[index]) return;
-    setSelectedResultIndex(index);
-    const alignments = getAlignmentsWithAssets(results[index]);
-    const firstAlignment = alignments[0] || null;
-    setSelectedAlignment(firstAlignment);
-    if (firstAlignment) {
-      loadAlignmentStructure(firstAlignment, results[index]);
+    selectAlignmentAt(index, 0);
+  };
+
+  const handleSelectAlignment = (alignment, index) => {
+    if (selectedResultIndex === null) return;
+    setSelectedAlignmentIndex(index);
+    if (alignment) {
+      const result = results[selectedResultIndex];
+      loadAlignmentStructure(alignment, result);
     }
   };
 
-  const handleSelectAlignment = (alignment) => {
-    setSelectedAlignment(alignment);
-    if (alignment) {
-      loadAlignmentStructure(alignment, selectedResult);
-    }
-  };
+  const findNextAlignmentTarget = useCallback(
+    (direction) => {
+      if (!results.length) return null;
+      const currentResultIndex = selectedResultIndex ?? 0;
+      const currentAlignments = results[currentResultIndex]
+        ? getAlignmentsWithAssets(results[currentResultIndex])
+        : [];
+      const currentAlignmentIndex =
+        selectedAlignmentIndex !== null ? selectedAlignmentIndex : currentAlignments.length ? 0 : null;
+
+      if (
+        currentAlignments.length &&
+        currentAlignmentIndex !== null &&
+        currentAlignmentIndex + direction >= 0 &&
+        currentAlignmentIndex + direction < currentAlignments.length
+      ) {
+        return {
+          resultIndex: currentResultIndex,
+          alignmentIndex: currentAlignmentIndex + direction,
+        };
+      }
+
+      let nextResultIndex = currentResultIndex + direction;
+      while (nextResultIndex >= 0 && nextResultIndex < results.length) {
+        const nextAlignments = getAlignmentsWithAssets(results[nextResultIndex]);
+        if (nextAlignments.length) {
+          return {
+            resultIndex: nextResultIndex,
+            alignmentIndex: direction > 0 ? 0 : nextAlignments.length - 1,
+          };
+        }
+        nextResultIndex += direction;
+      }
+
+      return null;
+    },
+    [results, selectedResultIndex, selectedAlignmentIndex, getAlignmentsWithAssets]
+  );
 
   const handlePrevResult = () => {
-    if (selectedResultIndex === null || selectedResultIndex <= 0) return;
-    handleSelectResult(selectedResultIndex - 1);
+    const target = findNextAlignmentTarget(-1);
+    if (!target) return;
+    selectAlignmentAt(target.resultIndex, target.alignmentIndex);
   };
 
   const handleNextResult = () => {
-    if (
-      selectedResultIndex === null ||
-      selectedResultIndex >= results.length - 1
-    )
-      return;
-    handleSelectResult(selectedResultIndex + 1);
+    const target = findNextAlignmentTarget(1);
+    if (!target) return;
+    selectAlignmentAt(target.resultIndex, target.alignmentIndex);
   };
 
-  const selectedResult =
-    selectedResultIndex !== null ? results[selectedResultIndex] : null;
-  const selectedResultAlignments = selectedResult
-    ? getAlignmentsWithAssets(selectedResult)
-    : [];
+  const selectedResult = selectedResultIndex !== null ? results[selectedResultIndex] : null;
+  const selectedResultAlignments = selectedResult ? getAlignmentsWithAssets(selectedResult) : [];
+  const alignmentCount = selectedResultAlignments.length;
+  const alignmentPosition = selectedAlignmentIndex !== null ? selectedAlignmentIndex + 1 : 0;
+  const canGoPrev = Boolean(findNextAlignmentTarget(-1));
+  const canGoNext = Boolean(findNextAlignmentTarget(1));
 
   const baseColumns = [
     'parent_dir',
@@ -456,9 +602,7 @@ function AfEvaluate() {
     'ss_interchain',
   ];
 
-  const availableColumns = baseColumns.filter((col) =>
-    results.some((row) => row[col] !== undefined)
-  );
+  const availableColumns = baseColumns.filter((col) => results.some((row) => row[col] !== undefined));
   const resultColumns = [...availableColumns, 'alignments'];
 
   const handleFileChange = (event) => {
@@ -476,9 +620,7 @@ function AfEvaluate() {
     const isArchive = /\.(tar|tar\.gz|tgz|zip)$/i.test(file.name);
 
     if (!isArchive) {
-      setError(
-        'Unsupported file type. Please choose a single .tar/.tar.gz/.tgz/.zip archive.'
-      );
+      setError('Unsupported file type. Please choose a single .tar/.tar.gz/.tgz/.zip archive.');
       setSelectedFile(null);
       return;
     }
@@ -502,7 +644,7 @@ function AfEvaluate() {
     setResultsJobId('');
     setResultsError('');
     setSelectedResultIndex(null);
-    setSelectedAlignment(null);
+    setSelectedAlignmentIndex(null);
 
     stopPolling();
     setIsSubmitting(true);
@@ -554,9 +696,7 @@ function AfEvaluate() {
 
     const poll = async () => {
       try {
-        const response = await fetch(
-          `${STATUS_ENDPOINT}?job_id=${encodeURIComponent(id)}`
-        );
+        const response = await fetch(`${STATUS_ENDPOINT}?job_id=${encodeURIComponent(id)}`);
         if (!response.ok) {
           const errText = (await response.text()) || response.statusText;
           throw new Error(errText || 'Status request failed.');
@@ -568,11 +708,7 @@ function AfEvaluate() {
         setLastCheckedAt(new Date().toLocaleTimeString());
 
         const normalized = String(statusFromApi || '').toLowerCase();
-        if (
-          ['complete', 'completed', 'done', 'finished', 'failed', 'error'].includes(
-            normalized
-          )
-        ) {
+        if (['complete', 'completed', 'done', 'finished', 'failed', 'error'].includes(normalized)) {
           stopPolling();
         }
       } catch (err) {
@@ -598,191 +734,153 @@ function AfEvaluate() {
   }, [status, jobId, resultsJobId, isFetchingResults, fetchResults]);
 
   return (
-    <div className='af-evaluate-page'>
-      <div className='af-evaluate-header'>
+    <div className="af-evaluate-page">
+      <div className="af-evaluate-header">
         <div>
-          <p className='af-kicker'>AlphaFold evaluation</p>
+          <p className="af-kicker">AlphaFold evaluation</p>
           <h1>AF Evaluate</h1>
-          <p className='af-subtitle'>
-            Upload a single compressed archive (.tar/.tar.gz/.tgz/.zip) for backend evaluation. The viewer shows a sample structure by default.
+          <p className="af-subtitle">
+            Upload a single compressed archive (.tar/.tar.gz/.tgz/.zip) for backend evaluation. The viewer shows a sample
+            structure by default.
           </p>
         </div>
-        <div className='af-status-card'>
-          <p className='af-status-label'>Job status</p>
-          <p className='af-status-value'>{status || 'No job started'}</p>
-          {jobId && <p className='af-status-meta'>job_id: {jobId}</p>}
-          {lastCheckedAt && (
-            <p className='af-status-meta'>Last checked: {lastCheckedAt}</p>
-          )}
+        <div className="af-status-card">
+          <p className="af-status-label">Job status</p>
+          <p className="af-status-value">{status || 'No job started'}</p>
+          {jobId && <p className="af-status-meta">job_id: {jobId}</p>}
+          {lastCheckedAt && <p className="af-status-meta">Last checked: {lastCheckedAt}</p>}
         </div>
       </div>
 
-      <div className='af-evaluate-grid'>
-        <div className='af-panel af-panel-form'>
-          <div className='af-panel-header'>
+      <div className="af-evaluate-grid">
+        <div className="af-panel af-panel-form">
+          <div className="af-panel-header">
             <div>
-              <p className='af-kicker'>Upload</p>
+              <p className="af-kicker">Upload</p>
               <h2>Submit to backend</h2>
             </div>
           </div>
-          <form className='af-form' onSubmit={submitJob}>
-            <label className='af-label' htmlFor='af-file-input'>
+          <form className="af-form" onSubmit={submitJob}>
+            <label className="af-label" htmlFor="af-file-input">
               Input archive
             </label>
-            <div className='af-file-actions'>
-              <button type='button' className='af-file-btn' onClick={openFilePicker}>
+            <div className="af-file-actions">
+              <button type="button" className="af-file-btn" onClick={openFilePicker}>
                 Select archive (.tar/.tar.gz/.tgz/.zip)
               </button>
             </div>
             <input
-              id='af-file-input'
+              id="af-file-input"
               ref={fileInputRef}
-              type='file'
-              accept='.tar,.tar.gz,.tgz,.zip'
+              type="file"
+              accept=".tar,.tar.gz,.tgz,.zip"
               onChange={handleFileChange}
-              className='af-file-input-hidden'
+              className="af-file-input-hidden"
             />
-            <p className='af-helper-text'>
+            <p className="af-helper-text">
               Upload exactly one archive (.tar/.tar.gz/.tgz/.zip). It will be sent to the backend as the `file` parameter.
             </p>
             {selectedFile && (
-              <ul className='af-file-list'>
+              <ul className="af-file-list">
                 <li>{selectedFile.name}</li>
               </ul>
             )}
-            <button className='af-submit-btn' type='submit' disabled={isSubmitting}>
+            <button className="af-submit-btn" type="submit" disabled={isSubmitting}>
               {isSubmitting ? 'Submitting...' : 'Upload & Start'}
             </button>
-            {error && <p className='af-error'>{error}</p>}
+            {error && <p className="af-error">{error}</p>}
           </form>
         </div>
 
-        <div className='af-panel af-panel-viewer'>
-          <div className='af-panel-header'>
+        <div className="af-panel af-panel-viewer">
+          <div className="af-panel-header">
             <div>
-              <p className='af-kicker'>3D Viewer</p>
+              <p className="af-kicker">3D Viewer</p>
               <h2>Mol* preview</h2>
             </div>
-            <span className='af-tag'>PDB</span>
+            <span className="af-tag">PDB</span>
           </div>
-          <div className='af-viewer'>
-            <div ref={viewerContainerRef} className='af-viewer-embed' />
+          <div className="af-viewer">
+            <div ref={viewerContainerRef} className="af-viewer-embed" />
           </div>
-          <p className='af-helper-text'>
-            Select a single archive to send to the backend. The viewer shows a sample structure.
-          </p>
+          <p className="af-helper-text">Select a single archive to send to the backend. The viewer shows a sample structure.</p>
         </div>
 
-        <div className='af-panel af-panel-results'>
-          <div className='af-panel-header'>
+        <div className="af-panel af-panel-results">
+          <div className="af-panel-header">
             <div>
-              <p className='af-kicker'>Results</p>
+              <p className="af-kicker">Results</p>
               <h2>Evaluation output</h2>
             </div>
-            {jobId && (
-              <span className='af-tag'>
-                job: {jobId.length > 8 ? `${jobId.slice(0, 8)}...` : jobId}
-              </span>
-            )}
+            {jobId && <span className="af-tag">job: {jobId.length > 8 ? `${jobId.slice(0, 8)}...` : jobId}</span>}
           </div>
 
-          <div className='af-manual-controls'>
-            <label className='af-label' htmlFor='af-job-id-input'>
+          <div className="af-manual-controls">
+            <label className="af-label" htmlFor="af-job-id-input">
               Load previous job
             </label>
-            <div className='af-job-actions'>
+            <div className="af-job-actions">
               <input
-                id='af-job-id-input'
-                type='text'
+                id="af-job-id-input"
+                type="text"
                 value={jobIdInput}
                 onChange={(e) => setJobIdInput(e.target.value)}
-                placeholder='Enter job_id'
-                className='af-text-input'
+                placeholder="Enter job_id"
+                className="af-text-input"
               />
               <button
-                type='button'
-                className='af-file-btn'
+                type="button"
+                className="af-file-btn"
                 onClick={handleFetchExistingResults}
                 disabled={isFetchingResults}
               >
                 {isFetchingResults ? 'Loading...' : 'Load results'}
               </button>
-              <button
-                type='button'
-                className='af-file-btn'
-                onClick={downloadResultsArchive}
-                disabled={isDownloading}
-              >
+              <button type="button" className="af-file-btn" onClick={downloadResultsArchive} disabled={isDownloading}>
                 {isDownloading ? 'Downloading...' : 'Download all (.tar.gz)'}
               </button>
             </div>
-            <p className='af-helper-text'>
-              Enter a job_id to retrieve results or download the full archive.
-            </p>
+            <p className="af-helper-text">Enter a job_id to retrieve results or download the full archive.</p>
           </div>
 
-          {isFetchingResults && (
-            <p className='af-status-meta'>Loading results...</p>
-          )}
+          {isFetchingResults && <p className="af-status-meta">Loading results...</p>}
           {resultsError && (
-            <div className='af-error-block'>
-              <p className='af-error'>{resultsError}</p>
+            <div className="af-error-block">
+              <p className="af-error">{resultsError}</p>
               {jobId && (
-                <button
-                  type='button'
-                  className='af-file-btn'
-                  onClick={() => fetchResults(jobId)}
-                  disabled={isFetchingResults}
-                >
+                <button type="button" className="af-file-btn" onClick={() => fetchResults(jobId)} disabled={isFetchingResults}>
                   Retry results fetch
                 </button>
               )}
             </div>
           )}
           {!isFetchingResults && !results.length && !resultsError && (
-            <p className='af-helper-text'>
-              Results will appear here after the job finishes.
-            </p>
+            <p className="af-helper-text">Results will appear here after the job finishes.</p>
           )}
 
           {results.length > 0 && (
             <>
-              <div className='af-results-nav'>
-                <button
-                  type='button'
-                  className='af-file-btn'
-                  onClick={handlePrevResult}
-                  disabled={selectedResultIndex === null || selectedResultIndex === 0}
-                >
-                  &lt; Prev
+              <div className="af-results-nav">
+                <button type="button" className="af-file-btn" onClick={handlePrevResult} disabled={!canGoPrev}>
+                  &lt; Prev PDB
                 </button>
-                <span className='af-status-meta'>
+                <span className="af-status-meta">
                   {selectedResultIndex !== null
                     ? `Result ${selectedResultIndex + 1} of ${results.length}`
                     : `Result 0 of ${results.length}`}
+                  {alignmentCount ? ` | PDB ${alignmentPosition} of ${alignmentCount}` : ''}
                 </span>
-                <button
-                  type='button'
-                  className='af-file-btn'
-                  onClick={handleNextResult}
-                  disabled={
-                    selectedResultIndex === null ||
-                    selectedResultIndex >= results.length - 1
-                  }
-                >
-                  Next &gt;
+                <button type="button" className="af-file-btn" onClick={handleNextResult} disabled={!canGoNext}>
+                  Next PDB &gt;
                 </button>
               </div>
-              <div className='af-results-table-wrapper'>
-                <table className='af-results-table'>
+
+              <div className="af-results-table-wrapper">
+                <table className="af-results-table">
                   <thead>
                     <tr>
                       {resultColumns.map((col) => (
-                        <th key={col}>
-                          {col === 'alignments'
-                            ? 'Alignments'
-                            : col.replace(/_/g, ' ')}
-                        </th>
+                        <th key={col}>{col === 'alignments' ? 'Alignments' : col.replace(/_/g, ' ')}</th>
                       ))}
                     </tr>
                   </thead>
@@ -794,17 +892,12 @@ function AfEvaluate() {
                         <tr
                           key={rowIndex}
                           onClick={() => handleSelectResult(rowIndex)}
-                          style={
-                            isSelected ? { backgroundColor: '#f4f7ff' } : undefined
-                          }
+                          style={isSelected ? { backgroundColor: '#f4f7ff' } : undefined}
                         >
                           {resultColumns.map((col) => (
                             <td key={`${col}-${rowIndex}`}>
                               {col === 'alignments'
-                                ? alignments
-                                    .map((alignment) => alignment.pdbId)
-                                    .filter(Boolean)
-                                    .join(', ') || '-'
+                                ? alignments.map((a) => a.pdbId).filter(Boolean).join(', ') || '-'
                                 : row[col] ?? '-'}
                             </td>
                           ))}
@@ -815,25 +908,20 @@ function AfEvaluate() {
                 </table>
               </div>
 
-              <div className='af-alignments-section'>
-                <p className='af-label'>
-                  Alignments & structures
+              <div className="af-alignments-section">
+                <p className="af-label">
+                  Alignments &amp; structures
                   {selectedResult?.parent_dir ? ` - ${selectedResult.parent_dir}` : ''}
                 </p>
 
                 {!selectedResultAlignments.length && (
-                  <p className='af-helper-text'>
-                    Select a row in the table to choose alignments to view.
-                  </p>
+                  <p className="af-helper-text">Select a row in the table to choose alignments to view.</p>
                 )}
 
                 {selectedResultAlignments.length > 0 && (
-                  <div className='af-alignment-list'>
+                  <div className="af-alignment-list">
                     {selectedResultAlignments.map((alignment, idx) => {
-                      const isActive =
-                        selectedAlignment?.pdbId &&
-                        alignment.pdbId &&
-                        selectedAlignment.pdbId === alignment.pdbId;
+                      const isActive = idx === selectedAlignmentIndex;
                       const metaParts = [];
                       if (alignment.rmsd) metaParts.push(`RMSD ${alignment.rmsd}`);
                       if (alignment.overlap) metaParts.push(`overlap ${alignment.overlap}`);
@@ -841,20 +929,18 @@ function AfEvaluate() {
 
                       return (
                         <button
-                          type='button'
+                          type="button"
                           key={alignment.pdbId || idx}
-                          className='af-alignment-btn'
-                          onClick={() => handleSelectAlignment(alignment)}
+                          className="af-alignment-btn"
+                          onClick={() => handleSelectAlignment(alignment, idx)}
                           style={
                             isActive
                               ? { backgroundColor: '#e7eefc', borderColor: '#4c6fff' }
                               : { backgroundColor: '#f7f7f9', borderColor: '#d4d7dd' }
                           }
                         >
-                          <span>{alignment.pdbId ? `PDB ${alignment.pdbId}` : 'Alignment'}</span>
-                          {metaParts.length > 0 && (
-                            <span className='af-alignment-meta'>({metaParts.join(' | ')})</span>
-                          )}
+                          <span>{alignment.pdbId || 'Alignment'}</span>
+                          {metaParts.length > 0 && <span className="af-alignment-meta">({metaParts.join(' | ')})</span>}
                         </button>
                       );
                     })}
