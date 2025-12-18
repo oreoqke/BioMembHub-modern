@@ -24,6 +24,7 @@ function AfEvaluate() {
   const [lastCheckedAt, setLastCheckedAt] = useState('');
   const [pdbFilePreview, setPdbFilePreview] = useState(null);
   const [results, setResults] = useState([]);
+  const [assetFiles, setAssetFiles] = useState([]);
   const [resultsError, setResultsError] = useState('');
   const [isFetchingResults, setIsFetchingResults] = useState(false);
   const [resultsJobId, setResultsJobId] = useState('');
@@ -105,6 +106,11 @@ function AfEvaluate() {
     loadStructurePreview(pdbFilePreview);
   }, [loadStructurePreview, pdbFilePreview]);
 
+  const normalizeValue = useCallback((value) => {
+    if (value === null || value === undefined) return '';
+    return String(value).toLowerCase();
+  }, []);
+
   const getAlignmentsFromResult = useCallback((result) => {
     if (!result) return [];
 
@@ -125,9 +131,124 @@ function AfEvaluate() {
     return alignments;
   }, []);
 
+  const findReferenceAsset = useCallback(
+    (result, pdbId, assetsOverride) => {
+      const assets = Array.isArray(assetsOverride) ? assetsOverride : assetFiles;
+      if (!result || !pdbId || !assets.length) return null;
+      const target = normalizeValue(`${pdbId}.pdb`);
+      const parentDir = normalizeValue(result.parent_dir);
+
+      const matches = assets.filter((file) => {
+        const haystack = `${normalizeValue(file.name)} ${normalizeValue(file.path)} ${normalizeValue(file.url)}`;
+        if (!haystack.includes(target)) return false;
+        if (haystack.includes('alignments')) return false;
+        if (parentDir && !haystack.includes(parentDir)) return false;
+        return true;
+      });
+
+      return matches[0] || null;
+    },
+    [assetFiles, normalizeValue]
+  );
+
+  const findModelAsset = useCallback(
+    (result, assetsOverride) => {
+      const assets = Array.isArray(assetsOverride) ? assetsOverride : assetFiles;
+      if (!result || !assets.length) return null;
+
+      const parentDir = normalizeValue(result.parent_dir);
+      const modelNumber = normalizeValue(result.model_number);
+
+      const candidates = assets.filter((file) => {
+        const haystack = `${normalizeValue(file.name)} ${normalizeValue(file.path)} ${normalizeValue(file.url)}`;
+        if (!haystack.includes('.pdb')) return false;
+        if (haystack.includes('alignments')) return false;
+        if (haystack.includes('_vs_')) return false;
+        if (parentDir && !haystack.includes(parentDir)) return false;
+        if (!/(model|rank)[_-]?\d+/.test(haystack)) return false;
+        return true;
+      });
+
+      if (!candidates.length) return null;
+      if (modelNumber) {
+        const modelToken = new RegExp(`model[_-]?${modelNumber}\\b`);
+        const rankToken = new RegExp(`rank[_-]?0*${modelNumber}\\b`);
+        const match = candidates.find((file) => {
+          const haystack = `${normalizeValue(file.name)} ${normalizeValue(file.path)} ${normalizeValue(file.url)}`;
+          return modelToken.test(haystack) || rankToken.test(haystack);
+        });
+        if (match) return match;
+      }
+
+      return candidates[0];
+    },
+    [assetFiles, normalizeValue]
+  );
+
+  const findAlignmentAsset = useCallback(
+    (result, pdbId, assetsOverride) => {
+      const assets = Array.isArray(assetsOverride) ? assetsOverride : assetFiles;
+      if (!result || !pdbId || !assets.length) return null;
+
+      const modelNumber = result.model_number;
+      if (!modelNumber) return null;
+
+      const token = normalizeValue(`model_${modelNumber}_vs_${pdbId}`);
+      const parentDir = normalizeValue(result.parent_dir);
+
+      const matches = assets.filter((file) => {
+        const name = normalizeValue(file.name);
+        const path = normalizeValue(file.path);
+        const url = normalizeValue(file.url);
+        const haystack = `${name} ${path} ${url}`;
+        if (!haystack.includes(token)) return false;
+        if (!haystack.includes('.pdb')) return false;
+        return true;
+      });
+
+      if (!matches.length) return null;
+
+      const preferred = parentDir
+        ? matches.find((file) => {
+            const haystack = `${normalizeValue(file.name)} ${normalizeValue(file.path)} ${normalizeValue(file.url)}`;
+            return haystack.includes(parentDir);
+          })
+        : null;
+
+      return preferred || matches[0];
+    },
+    [assetFiles, normalizeValue]
+  );
+
+  const getAlignmentsWithAssets = useCallback(
+    (result, assetsOverride) => {
+      const alignments = getAlignmentsFromResult(result);
+      return alignments.map((alignment) => {
+        const asset = findAlignmentAsset(
+          result,
+          alignment.pdbId,
+          assetsOverride
+        );
+        const referenceAsset = findReferenceAsset(
+          result,
+          alignment.pdbId,
+          assetsOverride
+        );
+        return {
+          ...alignment,
+          assetUrl: asset?.url || '',
+          assetName: asset?.name || '',
+          referenceUrl: referenceAsset?.url || '',
+          referenceName: referenceAsset?.name || '',
+        };
+      });
+    },
+    [getAlignmentsFromResult, findAlignmentAsset, findReferenceAsset]
+  );
+
   const loadAlignmentStructure = useCallback(
-    async (pdbId) => {
-      if (!pdbId) return;
+    async (alignment, result, assetsOverride) => {
+      if (!alignment) return;
       const viewer = await ensureViewer();
       if (!viewer) return;
 
@@ -138,16 +259,28 @@ function AfEvaluate() {
           viewer.plugin.clear();
         }
 
-        await viewer.loadStructureFromUrl(
-          `https://files.rcsb.org/download/${encodeURIComponent(pdbId)}.pdb`,
-          'pdb'
-        );
+        const modelAsset = findModelAsset(result, assetsOverride);
+        if (modelAsset?.url) {
+          await viewer.loadStructureFromUrl(modelAsset.url, 'pdb');
+        } else {
+          await viewer.loadStructureFromUrl(SAMPLE_PDB_URL, 'pdb');
+        }
+
+        const referenceUrl = alignment.referenceUrl || alignment.assetUrl;
+        if (referenceUrl) {
+          await viewer.loadStructureFromUrl(referenceUrl, 'pdb');
+        } else if (alignment.pdbId) {
+          await viewer.loadStructureFromUrl(
+            `https://files.rcsb.org/download/${encodeURIComponent(alignment.pdbId)}.pdb`,
+            'pdb'
+          );
+        }
       } catch (err) {
         console.error('Mol* load alignment failed', err);
         setError('Could not load selected structure into the viewer.');
       }
     },
-    [ensureViewer]
+    [ensureViewer, findModelAsset]
   );
 
   const fetchResults = useCallback(
@@ -168,13 +301,22 @@ function AfEvaluate() {
 
         const data = await response.json();
         const parsedResults = Array.isArray(data.results) ? data.results : [];
+        const parsedAssets = Array.isArray(data.asset_files) ? data.asset_files : [];
         setResults(parsedResults);
+        setAssetFiles(parsedAssets);
         if (parsedResults.length) {
-          const firstAlignments = getAlignmentsFromResult(parsedResults[0]);
+          const firstAlignments = getAlignmentsWithAssets(
+            parsedResults[0],
+            parsedAssets
+          );
           setSelectedResultIndex(0);
           setSelectedAlignment(firstAlignments[0] || null);
-          if (firstAlignments[0]?.pdbId) {
-            loadAlignmentStructure(firstAlignments[0].pdbId);
+          if (firstAlignments[0]) {
+            loadAlignmentStructure(
+              firstAlignments[0],
+              parsedResults[0],
+              parsedAssets
+            );
           }
         } else {
           setSelectedResultIndex(null);
@@ -188,7 +330,7 @@ function AfEvaluate() {
         setIsFetchingResults(false);
       }
     },
-    [getAlignmentsFromResult, loadAlignmentStructure]
+    [getAlignmentsWithAssets, loadAlignmentStructure]
   );
 
   const fetchStatusOnce = useCallback(async (id) => {
@@ -267,25 +409,39 @@ function AfEvaluate() {
   const handleSelectResult = (index) => {
     if (!results[index]) return;
     setSelectedResultIndex(index);
-    const alignments = getAlignmentsFromResult(results[index]);
+    const alignments = getAlignmentsWithAssets(results[index]);
     const firstAlignment = alignments[0] || null;
     setSelectedAlignment(firstAlignment);
-    if (firstAlignment?.pdbId) {
-      loadAlignmentStructure(firstAlignment.pdbId);
+    if (firstAlignment) {
+      loadAlignmentStructure(firstAlignment, results[index]);
     }
   };
 
   const handleSelectAlignment = (alignment) => {
     setSelectedAlignment(alignment);
-    if (alignment?.pdbId) {
-      loadAlignmentStructure(alignment.pdbId);
+    if (alignment) {
+      loadAlignmentStructure(alignment, selectedResult);
     }
+  };
+
+  const handlePrevResult = () => {
+    if (selectedResultIndex === null || selectedResultIndex <= 0) return;
+    handleSelectResult(selectedResultIndex - 1);
+  };
+
+  const handleNextResult = () => {
+    if (
+      selectedResultIndex === null ||
+      selectedResultIndex >= results.length - 1
+    )
+      return;
+    handleSelectResult(selectedResultIndex + 1);
   };
 
   const selectedResult =
     selectedResultIndex !== null ? results[selectedResultIndex] : null;
   const selectedResultAlignments = selectedResult
-    ? getAlignmentsFromResult(selectedResult)
+    ? getAlignmentsWithAssets(selectedResult)
     : [];
 
   const baseColumns = [
@@ -342,6 +498,7 @@ function AfEvaluate() {
     }
 
     setResults([]);
+    setAssetFiles([]);
     setResultsJobId('');
     setResultsError('');
     setSelectedResultIndex(null);
@@ -590,6 +747,32 @@ function AfEvaluate() {
 
           {results.length > 0 && (
             <>
+              <div className='af-results-nav'>
+                <button
+                  type='button'
+                  className='af-file-btn'
+                  onClick={handlePrevResult}
+                  disabled={selectedResultIndex === null || selectedResultIndex === 0}
+                >
+                  &lt; Prev
+                </button>
+                <span className='af-status-meta'>
+                  {selectedResultIndex !== null
+                    ? `Result ${selectedResultIndex + 1} of ${results.length}`
+                    : `Result 0 of ${results.length}`}
+                </span>
+                <button
+                  type='button'
+                  className='af-file-btn'
+                  onClick={handleNextResult}
+                  disabled={
+                    selectedResultIndex === null ||
+                    selectedResultIndex >= results.length - 1
+                  }
+                >
+                  Next &gt;
+                </button>
+              </div>
               <div className='af-results-table-wrapper'>
                 <table className='af-results-table'>
                   <thead>
