@@ -61,8 +61,8 @@ function AfEvaluate() {
       viewerInitRef.current = Viewer.create(viewerContainerRef.current, {
         layoutIsExpanded: false,
         layoutShowControls: true,
-        viewportShowExpand: true,
-        viewportShowControls: true,
+        viewportShowExpand: false,
+        viewportShowControls: false,
       }).catch((err) => {
         console.error('Mol* viewer init failed', err);
         setError('Could not initialize the Mol* viewer.');
