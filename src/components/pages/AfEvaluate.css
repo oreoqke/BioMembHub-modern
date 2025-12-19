@@ -218,6 +218,34 @@
   margin-top: 24px;
 }
 
+.af-log-section {
+  margin-top: 12px;
+}
+
+.af-log-section details {
+  padding: 14px 16px;
+  border: 1px solid #e3ebf4;
+  border-radius: 10px;
+  background: #f8fafc;
+}
+
+.af-log-section summary {
+  cursor: pointer;
+}
+
+.af-log-content {
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: 8px;
+  background: #0c1d2b;
+  color: #e2edf7;
+  font-size: 12px;
+  line-height: 1.5;
+  overflow: auto;
+  max-height: 260px;
+  white-space: pre-wrap;
+}
+
 .af-matrix-legend {
   display: flex;
   gap: 16px;

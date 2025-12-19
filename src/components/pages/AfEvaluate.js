@@ -38,6 +38,7 @@ function AfEvaluate() {
   const [results, setResults] = useState([]);
   const [assetFiles, setAssetFiles] = useState([]);
   const [modelAlignmentMatrices, setModelAlignmentMatrices] = useState([]);
+  const [logContents, setLogContents] = useState('');
   const [resultsError, setResultsError] = useState('');
   const [isFetchingResults, setIsFetchingResults] = useState(false);
   const [resultsJobId, setResultsJobId] = useState('');
@@ -574,6 +575,7 @@ function AfEvaluate() {
           : Array.isArray(data.status?.results)
           ? data.status.results
           : [];
+        const parsedLog = data.log_contents || data.status?.log_contents || '';
         const baseUrl = String(data.asset_base_url || data.status?.asset_base_url || '').replace(
           /\/+$/,
           ''
@@ -604,6 +606,7 @@ function AfEvaluate() {
         setResults(parsedResults);
         setAssetFiles(parsedAssets);
         setModelAlignmentMatrices(parsedMatrices);
+        setLogContents(parsedLog);
 
         if (parsedResults.length) {
           const firstAlignments = getAlignmentsWithAssets(parsedResults[0], parsedAssets);
@@ -900,6 +903,7 @@ function AfEvaluate() {
     setResults([]);
     setAssetFiles([]);
     setModelAlignmentMatrices([]);
+    setLogContents('');
     setResultsJobId('');
     setResultsError('');
     setSelectedResultIndex(null);
@@ -1103,6 +1107,16 @@ function AfEvaluate() {
             <button className="af-submit-btn" type="submit" disabled={isSubmitting}>
               {isSubmitting ? 'Submitting...' : 'Upload & Start'}
             </button>
+            <div className="af-log-section">
+              <details>
+                <summary className="af-label">Show logs</summary>
+                {logContents ? (
+                  <pre className="af-log-content">{logContents}</pre>
+                ) : (
+                  <p className="af-helper-text">No logs returned for this job.</p>
+                )}
+              </details>
+            </div>
             {error && <p className="af-error">{error}</p>}
           </form>
         </div>
@@ -1369,6 +1383,7 @@ function AfEvaluate() {
                   <p className="af-helper-text">No model alignment matrices returned for this job.</p>
                 )}
               </div>
+
             </>
           )}
         </div>
