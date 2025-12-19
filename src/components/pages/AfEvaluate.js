@@ -124,6 +124,37 @@ function AfEvaluate() {
     return String(value).toLowerCase();
   };
 
+  const formatJobError = useCallback((errorText, jobIdValue) => {
+    const raw = typeof errorText === 'string' ? errorText.trim() : '';
+    if (!raw) return '';
+    const normalized = raw.toLowerCase();
+    if (normalized.includes('results not ready')) {
+      const suffix = jobIdValue ? ` for job ${jobIdValue}` : '';
+      return `Results are not ready${suffix}. The job finished but no evaluation output was generated.`;
+    }
+    return raw;
+  }, []);
+
+  const getLogWarnings = useCallback((logText) => {
+    if (!logText) return [];
+    const lines = String(logText)
+      .split(/\r?\n/)
+      .map((line) => line.replace(/[^\x20-\x7E]+/g, '').trim())
+      .filter(Boolean);
+    const warnings = lines.filter((line) =>
+      /missing|no .*found|skipping|error/i.test(line)
+    );
+    const unique = [];
+    const seen = new Set();
+    warnings.forEach((line) => {
+      const key = normalizeValue(line);
+      if (seen.has(key)) return;
+      seen.add(key);
+      unique.push(line);
+    });
+    return unique.slice(0, 6);
+  }, [normalizeValue]);
+
   const getAssetName = useCallback((asset) => {
     if (!asset) return '';
     if (asset.name) return String(asset.name);
@@ -575,6 +606,7 @@ function AfEvaluate() {
           : Array.isArray(data.status?.results)
           ? data.status.results
           : [];
+        const parsedError = data.error || data.status?.error || '';
         const parsedLog = data.log_contents || data.status?.log_contents || '';
         const baseUrl = String(data.asset_base_url || data.status?.asset_base_url || '').replace(
           /\/+$/,
@@ -607,6 +639,7 @@ function AfEvaluate() {
         setAssetFiles(parsedAssets);
         setModelAlignmentMatrices(parsedMatrices);
         setLogContents(parsedLog);
+        setResultsError(parsedError ? formatJobError(parsedError, jobIdToFetch) : '');
 
         if (parsedResults.length) {
           const firstAlignments = getAlignmentsWithAssets(parsedResults[0], parsedAssets);
@@ -797,6 +830,9 @@ function AfEvaluate() {
   const alignmentPosition = selectedAlignmentIndex !== null ? selectedAlignmentIndex + 1 : 0;
   const canGoPrev = Boolean(findNextAlignmentTarget(-1));
   const canGoNext = Boolean(findNextAlignmentTarget(1));
+  const logWarnings = getLogWarnings(logContents);
+  const hasWarning =
+    logWarnings.length > 0 || /results are not ready|results not ready/i.test(resultsError);
   const selectedParentDir = selectedResult?.parent_dir
     ? normalizeValue(selectedResult.parent_dir)
     : '';
@@ -1203,7 +1239,20 @@ function AfEvaluate() {
           </div>
 
           {isFetchingResults && <p className="af-status-meta">Loading results...</p>}
-          {resultsError && (
+          {hasWarning && (
+            <div className="af-warning-block">
+              <p className="af-warning-title">Job finished without results</p>
+              {resultsError && <p className="af-warning-text">{resultsError}</p>}
+              {logWarnings.length > 0 && (
+                <ul className="af-warning-list">
+                  {logWarnings.map((line) => (
+                    <li key={line}>{line}</li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
+          {resultsError && !hasWarning && (
             <div className="af-error-block">
               <p className="af-error">{resultsError}</p>
               {jobId && (
