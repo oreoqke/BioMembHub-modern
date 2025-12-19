@@ -13,7 +13,6 @@ const BASE_URL = 'https://opm-back.cc.lehigh.edu/membranome-backend';
 const SUBMIT_ENDPOINT = `${BASE_URL}/af_evaluate`;
 const STATUS_ENDPOINT = `${BASE_URL}/af_evaluate/status`;
 const POLL_INTERVAL_MS = 5000;
-const SAMPLE_PDB_URL = 'https://files.rcsb.org/download/1CRN.pdb';
 const CYS_MODEL_COLOR = Color(0xe24a4a);
 const CYS_PDB_COLOR = Color(0x2f6fff);
 const FINISHED_STATES = ['complete', 'completed', 'done', 'finished', 'failed', 'error'];
@@ -119,31 +118,36 @@ function AfEvaluate() {
     }, { canUndo: 'Hide Water' });
   }, []);
 
-  useEffect(() => {
-    const loadSample = async () => {
-      const viewer = await ensureViewer();
-      if (!viewer) return;
-
-      await clearViewer(viewer);
-
-      try {
-        await viewer.loadStructureFromUrl(SAMPLE_PDB_URL, 'pdb', false, {
-          label: 'Sample (1CRN)',
-        });
-        await hideWaters(viewer);
-      } catch (err) {
-        console.error('Mol* load failed', err);
-        setError('Could not load structure into the viewer.');
-      }
-    };
-
-    loadSample();
-  }, [ensureViewer, clearViewer, hideWaters]);
-
   const normalizeValue = (value) => {
     if (value === null || value === undefined) return '';
     return String(value).toLowerCase();
   };
+
+  const getAssetName = useCallback((asset) => {
+    if (!asset) return '';
+    if (asset.name) return String(asset.name);
+    const source = asset.url || asset.path || '';
+    if (!source) return '';
+    const parts = String(source).split('/');
+    return parts[parts.length - 1] || '';
+  }, []);
+
+  const buildAlignmentAssetName = useCallback((result, pdbId) => {
+    if (!result || !pdbId) return '';
+    const parentDir = String(result.parent_dir || '').trim();
+    const modelNumber = String(result.model_number ?? '').trim();
+    const pdb = String(pdbId || '').trim();
+    if (!parentDir || modelNumber === '' || !pdb) return '';
+    return `${parentDir}_model_${modelNumber}_vs_${pdb}.pdb`;
+  }, []);
+
+  const buildReferenceAssetName = useCallback((result, pdbId) => {
+    if (!result || !pdbId) return '';
+    const parentDir = String(result.parent_dir || '').trim();
+    const pdb = String(pdbId || '').trim();
+    if (!parentDir || !pdb) return '';
+    return `${parentDir}_ref_${pdb}.pdb`;
+  }, []);
 
   const isMapFile = (file) => {
     if (!file) return false;
@@ -357,111 +361,25 @@ function AfEvaluate() {
   const findReferenceAsset = useCallback(
     (result, pdbId, assetsOverride) => {
       const assets = Array.isArray(assetsOverride) ? assetsOverride : assetFiles;
-      if (!result || !pdbId || !assets.length) return null;
-      const target = normalizeValue(`${pdbId}.pdb`);
-      const parentDir = normalizeValue(result.parent_dir);
-
-      const matches = assets.filter((file) => {
-        const name = normalizeValue(file.name);
-        const path = normalizeValue(file.path);
-        const url = normalizeValue(file.url);
-        const haystack = `${path} ${url}`;
-        if (name !== target) return false;
-        if (!haystack.includes('/results/')) return false;
-        if (haystack.includes('alignments')) return false;
-        if (parentDir && !haystack.includes(`/${parentDir}/`)) return false;
-        return true;
-      });
-
-      if (matches.length) return matches[0];
-
-      const fallback = assets.find((file) => normalizeValue(file.name) === target);
-      return fallback || null;
+      if (!assets.length) return null;
+      const expectedName = buildReferenceAssetName(result, pdbId);
+      if (!expectedName) return null;
+      const target = normalizeValue(expectedName);
+      return assets.find((file) => normalizeValue(getAssetName(file)) === target) || null;
     },
-    [assetFiles, normalizeValue]
-  );
-
-  const findModelAsset = useCallback(
-    (result, assetsOverride) => {
-      const assets = Array.isArray(assetsOverride) ? assetsOverride : assetFiles;
-      if (!result || !assets.length) return null;
-
-      const parentDir = normalizeValue(result.parent_dir);
-      const modelNumber = normalizeValue(result.model_number);
-
-      const candidates = assets.filter((file) => {
-        const haystack = `${normalizeValue(file.name)} ${normalizeValue(file.path)} ${normalizeValue(
-          file.url
-        )}`;
-        if (!haystack.includes('.pdb')) return false;
-        if (haystack.includes('alignments')) return false;
-        if (haystack.includes('_vs_')) return false;
-        if (parentDir && !haystack.includes(parentDir)) return false;
-        if (!/(model|rank)[_-]?\d+/.test(haystack)) return false;
-        return true;
-      });
-
-      if (!candidates.length) return null;
-
-      if (modelNumber) {
-        const modelToken = new RegExp(`model[_-]?${modelNumber}\\b`);
-        const rankToken = new RegExp(`rank[_-]?0*${modelNumber}\\b`);
-        const match = candidates.find((file) => {
-          const haystack = `${normalizeValue(file.name)} ${normalizeValue(file.path)} ${normalizeValue(
-            file.url
-          )}`;
-          return modelToken.test(haystack) || rankToken.test(haystack);
-        });
-        if (match) return match;
-      }
-
-      return candidates[0];
-    },
-    [assetFiles, normalizeValue]
+    [assetFiles, normalizeValue, getAssetName, buildReferenceAssetName]
   );
 
   const findAlignmentAsset = useCallback(
     (result, pdbId, assetsOverride) => {
       const assets = Array.isArray(assetsOverride) ? assetsOverride : assetFiles;
-      if (!result || !pdbId || !assets.length) return null;
-
-      const modelNumber = result.model_number;
-      if (!modelNumber) return null;
-
-      const token = normalizeValue(`model_${modelNumber}_vs_${pdbId}`);
-      const parentDir = normalizeValue(result.parent_dir);
-
-      const matches = assets.filter((file) => {
-        const name = normalizeValue(file.name);
-        const path = normalizeValue(file.path);
-        const url = normalizeValue(file.url);
-        const haystack = `${name} ${path} ${url}`;
-        if (!haystack.includes(token)) return false;
-        if (!haystack.includes('.pdb')) return false;
-        return true;
-      });
-
-      if (!matches.length) return null;
-
-      const preferredMatches = matches.filter((file) => {
-        const haystack = `${normalizeValue(file.path)} ${normalizeValue(file.url)}`;
-        if (haystack.includes('alignments_top')) return false;
-        return haystack.includes('/alignments/');
-      });
-      const pool = preferredMatches.length ? preferredMatches : matches;
-
-      const preferred = parentDir
-        ? pool.find((file) => {
-            const haystack = `${normalizeValue(file.name)} ${normalizeValue(file.path)} ${normalizeValue(
-              file.url
-            )}`;
-            return haystack.includes(parentDir);
-          })
-        : null;
-
-      return preferred || pool[0];
+      if (!assets.length) return null;
+      const expectedName = buildAlignmentAssetName(result, pdbId);
+      if (!expectedName) return null;
+      const target = normalizeValue(expectedName);
+      return assets.find((file) => normalizeValue(getAssetName(file)) === target) || null;
     },
-    [assetFiles, normalizeValue]
+    [assetFiles, normalizeValue, getAssetName, buildAlignmentAssetName]
   );
 
   const relabelLastStructure = (viewer, label) => {
@@ -575,20 +493,18 @@ function AfEvaluate() {
           label,
           { overrideEntryId, cysteineColor, cysteineLabel } = {}
         ) => {
-          if (!url) return;
-          try {
-            const response = await fetch(url);
-            if (!response.ok) {
-              throw new Error(`Failed to fetch PDB (${response.status})`);
-            }
-            let data = await response.text();
-            if (overrideEntryId) {
-              data = stripPdbHeaderIdCode(data);
-            }
-            await viewer.loadStructureFromData(data, 'pdb', { dataLabel: label });
-          } catch (err) {
-            await viewer.loadStructureFromUrl(url, 'pdb', false, { label });
+          if (!url) {
+            throw new Error('Missing backend PDB URL.');
           }
+          const response = await fetch(url);
+          if (!response.ok) {
+            throw new Error(`Failed to fetch PDB (${response.status})`);
+          }
+          let data = await response.text();
+          if (overrideEntryId) {
+            data = stripPdbHeaderIdCode(data);
+          }
+          await viewer.loadStructureFromData(data, 'pdb', { dataLabel: label });
           await addCysteineRepresentation(viewer, {
             color: cysteineColor,
             label: cysteineLabel,
@@ -596,48 +512,45 @@ function AfEvaluate() {
           await hideWaters(viewer);
         };
 
-        const alignedModelAsset = alignment.assetUrl
+        const modelAsset = alignment.assetUrl
           ? { url: alignment.assetUrl, name: alignment.assetName }
           : findAlignmentAsset(result, alignment.pdbId, assetsOverride);
-        const modelAsset = alignedModelAsset || findModelAsset(result, assetsOverride);
+        const referenceAsset = alignment.referenceUrl
+          ? { url: alignment.referenceUrl, name: alignment.referenceName }
+          : findReferenceAsset(result, alignment.pdbId, assetsOverride);
+        if (!modelAsset?.url || !referenceAsset?.url) {
+          setError('Missing aligned model or reference PDB in backend response.');
+          return;
+        }
         const modelLabel = getModelLabel(result);
 
-        // Always pass a label for URL loads (including fallback)
-        if (modelAsset?.url) {
-          await loadPdbWithLabel(modelAsset.url, modelLabel, {
-            overrideEntryId: true,
-            cysteineColor: CYS_MODEL_COLOR,
-            cysteineLabel: 'model',
-          });
-        } else {
-          await viewer.loadStructureFromUrl(SAMPLE_PDB_URL, 'pdb', false, { label: modelLabel });
-          await addCysteineRepresentation(viewer, { color: CYS_MODEL_COLOR, label: 'model' });
-        }
+        await loadPdbWithLabel(modelAsset.url, modelLabel, {
+          overrideEntryId: true,
+          cysteineColor: CYS_MODEL_COLOR,
+          cysteineLabel: 'model',
+        });
         relabelLastStructure(viewer, modelLabel);
 
         const referenceLabel = getPdbLabel(alignment);
-
-        if (alignment.referenceUrl) {
-          await loadPdbWithLabel(alignment.referenceUrl, referenceLabel, {
-            overrideEntryId: true,
-            cysteineColor: CYS_PDB_COLOR,
-            cysteineLabel: 'pdb',
-          });
-          relabelLastStructure(viewer, referenceLabel);
-        } else if (alignment.pdbId) {
-          await loadPdbWithLabel(
-            `https://files.rcsb.org/download/${encodeURIComponent(alignment.pdbId)}.pdb`,
-            referenceLabel,
-            { overrideEntryId: true, cysteineColor: CYS_PDB_COLOR, cysteineLabel: 'pdb' }
-          );
-          relabelLastStructure(viewer, referenceLabel);
-        }
+        await loadPdbWithLabel(referenceAsset.url, referenceLabel, {
+          overrideEntryId: true,
+          cysteineColor: CYS_PDB_COLOR,
+          cysteineLabel: 'pdb',
+        });
+        relabelLastStructure(viewer, referenceLabel);
       } catch (err) {
         console.error('Mol* load alignment failed', err);
         setError('Could not load selected structure into the viewer.');
       }
     },
-    [ensureViewer, clearViewer, findAlignmentAsset, findModelAsset, addCysteineRepresentation, hideWaters]
+    [
+      ensureViewer,
+      clearViewer,
+      findAlignmentAsset,
+      findReferenceAsset,
+      addCysteineRepresentation,
+      hideWaters,
+    ]
   );
 
   const fetchResults = useCallback(
@@ -656,10 +569,36 @@ function AfEvaluate() {
         }
 
         const data = await response.json();
-        const parsedResults = Array.isArray(data.results) ? data.results : [];
-        const parsedAssets = Array.isArray(data.asset_files) ? data.asset_files : [];
+        const parsedResults = Array.isArray(data.results)
+          ? data.results
+          : Array.isArray(data.status?.results)
+          ? data.status.results
+          : [];
+        const baseUrl = String(data.asset_base_url || data.status?.asset_base_url || '').replace(
+          /\/+$/,
+          ''
+        );
+        const rawAssets = [
+          ...(Array.isArray(data.asset_files) ? data.asset_files : []),
+          ...(Array.isArray(data.status?.asset_files) ? data.status.asset_files : []),
+        ];
+        const assetMap = new Map();
+        rawAssets.forEach((asset) => {
+          if (!asset) return;
+          const name = getAssetName(asset);
+          if (!name) return;
+          const url = asset.url ? String(asset.url) : baseUrl ? `${baseUrl}/${name}` : '';
+          const key = normalizeValue(name);
+          const existing = assetMap.get(key);
+          if (!existing || (!existing.url && url)) {
+            assetMap.set(key, { ...asset, name, url });
+          }
+        });
+        const parsedAssets = Array.from(assetMap.values());
         const parsedMatrices = Array.isArray(data.model_alignment_matrices)
           ? data.model_alignment_matrices
+          : Array.isArray(data.status?.model_alignment_matrices)
+          ? data.status.model_alignment_matrices
           : [];
 
         setResults(parsedResults);
@@ -683,7 +622,7 @@ function AfEvaluate() {
         setIsFetchingResults(false);
       }
     },
-    [getAlignmentsWithAssets, loadAlignmentStructure, getErrorMessage]
+    [getAlignmentsWithAssets, loadAlignmentStructure, getErrorMessage, getAssetName, normalizeValue]
   );
 
   const fetchStatusOnce = useCallback(async (id) => {
@@ -1071,7 +1010,8 @@ function AfEvaluate() {
           <h1>AF Evaluate</h1>
           <p className="af-subtitle">
             Upload a compressed archive (.tar/.tar.gz/.tgz/.zip) or an uncompressed folder. If map.txt is missing, enter
-            UniProt codes and we will build it before sending your data. The viewer shows a sample structure by default.
+            UniProt codes and we will build it before sending your data. The viewer loads aligned models and references
+            after results are available.
           </p>
         </div>
         <div className="af-status-card">
@@ -1144,7 +1084,7 @@ function AfEvaluate() {
                     </label>
                     <textarea
                       id="af-map-codes"
-                      className="af-text-input"
+                      className="af-map-textarea"
                       rows={4}
                       value={mapCodesText}
                       onChange={(e) => setMapCodesText(e.target.value)}
@@ -1189,7 +1129,8 @@ function AfEvaluate() {
             <div ref={viewerContainerRef} className="af-viewer-embed" />
           </div>
           <p className="af-helper-text">
-            Select an archive or folder to send to the backend. The viewer shows a sample structure.
+            Select an archive or folder to send to the backend. The viewer loads aligned models and references from the
+            results.
           </p>
         </div>
 

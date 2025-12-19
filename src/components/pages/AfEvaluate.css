@@ -442,6 +442,46 @@
   box-shadow: none;
 }
 
+.af-folder-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.af-map-textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #aac5df;
+  background: #f9fcff;
+  border-radius: 10px;
+  color: #0a3a63;
+  font-size: 14px;
+  resize: vertical;
+}
+
+/* Mol* viewer sequence: keep start visible and scrollable */
+.af-viewer .msp-sequence-wrapper {
+  padding: 0;
+}
+
+.af-viewer .msp-sequence-wrapper-non-empty {
+  overflow-x: auto;
+  padding: 14px 18px 12px 22px;
+  letter-spacing: 0.5px;
+}
+
+.af-viewer .msp-sequence-wrapper .msp-sequence-present {
+  display: inline-block;
+  margin-right: 2px;
+}
+
+.af-viewer .msp-sequence-wrapper .msp-sequence-number {
+  left: 3em;
+  margin-left: -3em;
+  margin-right: 15px;
+  display: inline-block;
+}
+
 .af-error {
   color: #b00020;
   font-size: 14px;
